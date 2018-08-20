@@ -1,0 +1,24 @@
+{
+  "name": "xjd-react",
+  "version": "0.0.1",
+  "description": "simple react",
+  "main": "dist/react.js",
+  "scripts": {
+    "start": "parcel ./index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "xjd",
+  "license": "MIT",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-env": "^1.6.1"
+  }
+}
