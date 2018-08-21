@@ -1,6 +1,8 @@
 import Component from '../react/component';
 import setAttribute from './dom';
 
+import { diff } from './diff';
+
 function removeNode(node) {
     if (node && node.parentNode) {
         node.parentNode.removeChild(node);
@@ -112,6 +114,10 @@ function _render(vnode) {
     return dom;
 }
 
-export function render(vnode, container) {
-    return container.appendChild(_render(vnode));
+// export function render(vnode, container) {
+//     return container.appendChild(_render(vnode));
+// }
+
+export default function render(vnode, container, dom) {
+    diff(dom, vnode, container);
 }

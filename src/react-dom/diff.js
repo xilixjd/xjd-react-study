@@ -1,6 +1,5 @@
 import Component from '../react/component';
 import setAttribute from './dom';
-import { renderComponent } from './render';
 
 function removeNode(node) {
     if (node && node.parentNode) {
@@ -206,4 +205,62 @@ function diffComponent(dom, vnode) {
     }
 
     return newDom;
+}
+
+function setComponentProps(component, props) {
+    if (!component.base) {
+        if (component.componentWillMount) {
+            component.componentWillMount();
+        }
+    } else {
+        if (component.componentWillReceiveProps) {
+            component.componentWillReceiveProps();
+        }
+    }
+
+    component.props = props;
+}
+
+export function renderComponent(component) {
+    let base;
+    const rendered = component.render();
+
+    if (component.base && component.componentWillUpdate) {
+        component.componentWillUpdate();
+    }
+
+    base = diffNode(component.base, rendered);
+
+    if (component.base) {
+        if (component.componentDidUpdate) {
+            component.componentDidUpdate();
+        }
+    } else {
+        if (component.componentDidMount) {
+            component.componentDidMount();
+        }
+    }
+
+    component.base = base;
+    base._component = component;
+}
+
+function diffAttributes(dom, vnode) {
+    const old = {};
+    const attrs = vnode.attrs;
+
+    for (let i = 0; i < dom.attributes.length; i++) {
+        const oldAttr = dom.attributes[i];
+        old[oldAttr.name] = oldAttr.value;
+    }
+
+    for (let key in old) {
+        if (!(name in attrs)) {
+            setAttribute(dom, key, undefined);
+        }
+    }
+
+    for (let key in attrs) {
+        setAttribute(dom, key, attrs[key]);
+    }
 }
