@@ -26,7 +26,7 @@ class Counter extends React.Component {
         let flag = this.state.flag;
         return (
             <div>
-                {flag ? <Welcome /> : <h1>flag: false</h1>}
+                {/* {flag ? <Welcome /> : <h1>flag: false</h1>} */}
                 {/* {flag ? <h1>flag: true</h1> : <h1>flag: false</h1>} */}
                 {/* <h2>{this.props.a}</h2> */}
                 <h1>count: {this.state.num}</h1>

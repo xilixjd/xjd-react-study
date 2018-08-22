@@ -1,4 +1,5 @@
-import ReactDOM from '../react-dom'
+// import ReactDOM from '../react-dom';
+import { enqueueSetState } from './setStateQueue';
 
 class Component {
     constructor(props = {}) {
@@ -9,8 +10,9 @@ class Component {
     }
 
     setState(stateChange) {
-        Object.assign(this.state, stateChange);
-        ReactDOM.renderComponent(this);
+        // Object.assign(this.state, stateChange);
+        // ReactDOM.renderComponent(this);
+        enqueueSetState(stateChange, this);
     }
 }
 
