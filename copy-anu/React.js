@@ -72,8 +72,93 @@ function addEvent(el, eventType, fn, bool) {
     }
 }
 
-function dispatchEvent(e, type, end) {
-    
+function dispatchEvent(e) {
+    e = new SyntheticEvent(e)
+    var eventType = e.type
+    if (eventType === "click") {
+        if (e.target.disabled) {
+            return
+        }
+    }
+    var paths = collectPaths(e.target, end || document)
+    var captured = eventType + "capture"
+
+    options.async = true
+    // 捕获阶段
+    triggerEventFlow(paths, captured, e)
+    if (!e._stopPropagation) {
+        // 冒泡阶段
+        triggerEventFlow(paths.reverse(), eventType, e)
+    }
+    options.async = false
+    options.flushBatchedUpdates()
+}
+
+function collectPaths(from, end) {
+    var paths = []
+    while (from !== end && from.nodeType === 1) {
+        var events = from.__events
+        if (events) {
+            paths.push({
+                dom: from,
+                events: events
+            })
+        }
+        from = from.parentNode
+    }
+    return paths
+}
+
+function triggerEventFlow(paths, eventType, e) {
+    for (var i = paths.length - 1; i >= 0; i--) {
+        var path = paths[i]
+        var fn = path.events[eventType]
+        if (typeNumber(fn) === 5) {
+            e.currentTarget = path.dom
+            fn.call(path.dom, e)
+            if (e._stopPropagation) {
+                break
+            }
+        }
+    }
+}
+
+function SyntheticEvent(event) {
+    if (event.nativeEvent) {
+        return event
+    }
+    for (var i in event) {
+        if (!eventProto[i]) {
+            this[i] = event[i]
+        }
+    }
+    if (!this.target) {
+        this.target = event.srcElement
+    }
+    this.nativeEvent = event
+}
+
+var eventProto = SyntheticEvent.prototype = {
+    fixEvent: function fixEvent() {},
+    preventDefault: function preventDefault() {
+        var e = this.nativeEvent || {}
+        e.returnValue = this.returnValue = false
+        if (e.preventDefault) {
+            e.preventDefault()
+        }
+    },
+    fixHooks: function fixHooks() {},
+    stopPropagation: function stopPropagation() {
+        var e = this.nativeEvent || {}
+        e.cancelBubble = this._stopPropagation = true
+        if (e.stopPropagation) {
+            e.stopPropagation()
+        }
+    },
+    stopImmediatePropagation: function stopImmediatePropagation() {
+        this.stopPropagation();
+        this.stopImmediate = true;
+    }
 }
 /* ==========================================event========================================== */
 
