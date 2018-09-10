@@ -11,6 +11,26 @@ function createDOMElement(vnode) {
     return dom
 }
 
+/* ==========================================util========================================== */
+// 对比对象是否相等
+function objectCompare(obj1, obj2) {
+    var obj1Stringfy
+    var obj2Stringfy
+    try {
+        obj1Stringfy = JSON.stringify(obj1)
+    } catch (e) {
+        console.log("第一个参数不是对象")
+        return false
+    }
+    try {
+        obj2Stringfy = JSON.stringify(obj2)
+    } catch (e) {
+        console.log("第二个参数不是对象")
+        return false
+    }
+    return obj1Stringfy === obj2Stringfy
+}
+
 var numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
@@ -21,17 +41,43 @@ var numberMap = {
     "[object Array]": 7
   };
   
-  // undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:8
-  function typeNumber(data) {
+// undefined: 0, null: 1, boolean:2, number: 3, string: 4, function: 5, array: 6, object:8
+function typeNumber(data) {
     if (data === null) {
-      return 1;
+        return 1;
     }
     if (data === void 666) {
-      return 0;
+        return 0;
     }
     var a = numberMap[Object.prototype.toString.call(data)];
     return a || 8;
-  }
+}
+/* ==========================================util========================================== */
+
+/* ==========================================event========================================== */
+var globalEventsDict = {}
+
+function addGlobalEvent(name) {
+    if (!globalEventsDict[name]) {
+        globalEventsDict[name] = true
+        addEvent(document, name, dispatchEvent)
+    }
+}
+
+function addEvent(el, eventType, fn, bool) {
+    if (el.addEventListener) {
+        el.addEventListener(eventType, fn, bool)
+    } else if (el.attachEvent) {
+        el.attachEvent("on" + eventType, fn)
+    }
+}
+
+function dispatchEvent(e, type, end) {
+    
+}
+/* ==========================================event========================================== */
+
+
 
 var specialProps = {
     children: 1,
@@ -68,10 +114,41 @@ var propsHook = {
         dom.setAttribute(name, val)
     },
     style: function style(dom, _, val, lastProps) {
-
+        var oldStyle = lastProps.style || {}
+        var newStyle = val || {}
+        if (objectCompare(oldStyle, newStyle) === true) {
+            return
+        }
+        for (var name in newStyle) {
+            var val = newStyle[name]
+            if (val !== oldStyle[name]) {
+                if (/^-?\d+(\.\d+)?$/.test(val)) {
+                    val += "px"
+                }
+                dom.style[name] = val
+            }
+        }
+        // 旧样式中存在，新样式没有的，需要清除
+        for (var name in oldStyle) {
+            if (!(name in newStyle)) {
+                dom.style[name] = ""
+            }
+        }
     },
     __event__: function __event__(dom, name, val, lastProps) {
-        
+        var domEvents = dom.__events || (dom.__events = {})
+        if (!val) {
+            delete domEvents[name.slice(2)]
+        } else {
+            // vnode 第一次 mount 的时候没有这个事件，则要绑定全局事件
+            // 然而当 update 来 diffProps 时，lastProps 与第一次 mount 的事件一致时
+            // 不用
+            var _name = name.slice(2).toLowerCase()
+            if (!lastProps[name]) {
+                addGlobalEvent(_name)
+            }
+            domEvents[_name] = val
+        }
     }
 }
 
