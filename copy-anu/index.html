@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+        .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+       .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style>
+<!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+<!--<script type='text/javascript' src="./dist/devtools.js"></script>-->
+
+<script src="./React.js"></script>
+ <!-- <script src="./dist/react-dom.js"></script> -->
+
+   <!--  <script src="./test/redux.js"></script>
+    <script src="./test/react-redux.js"></script>-->
+    <script src="./babel.js"></script>
+    <script type='text/babel'>
+        class App extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    aaa: 'aaa',
+                    num: 0,
+                }
+                this.inputRef = null
+                this.inputRefFunc = (element) => {
+                    this.inputRef = element
+                }
+            }
+            change(a){
+                this.setState({
+                    aaa:a
+                })
+            }
+            click1() {
+                var equal = this.state.aaa === "aaa"
+                if (equal) {
+                    this.setState({
+                        aaa: "bbb"
+                    })
+                } else {
+                    this.setState({
+                        aaa: "aaa"
+                    })
+                }
+                this.setState({
+                    num: this.state.num + 1
+                })
+                this.setState({
+                    num: this.state.num + 1
+                })
+                this.inputRef.focus()
+            }
+            click2() {
+                var equal = this.state.aaa === "aaa"
+                if (equal) {
+                    this.setState({
+                        aaa: "bbb"
+                    })
+                } else {
+                    this.setState({
+                        aaa: "aaa"
+                    })
+                }
+                this.setState({
+                    num: this.state.num + 2
+                })
+            }
+            componentDidMount(){
+                console.log('App componentDidMount')
+            }
+            componentWillUpdate(){
+                console.log('App componentWillUpdate')
+            }
+            render() {
+                return(
+                    <div>
+                        <h2>{this.state.num}</h2>
+                        {/*this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />*/}
+                        <Inner className={this.state.aaa}/>
+                        {/*<button onClick={() => this.click()}>click</button>*/}
+                        {this.state.aaa === 'aaa' ? <button style={{fontSize: "50px"}} onClick={() => this.click1()}>click</button> : <button onClick={() => this.click2()}>click</button>}
+                        <input ref={this.inputRefFunc}/>
+                    </div>
+                )
+             
+            }
+        }
+
+        class Inner extends React.Component{
+             constructor(props){
+                super(props)
+                this.state = {
+                    innerP: "init",
+                }
+            }
+            componentWillMount(){
+                console.log('Inner componentWillMount')
+            }
+            componentDidMount(){
+                console.log('Inner componentDidMount')
+            }
+            
+            componentWillUpdate(){
+                console.log('Inner componentWillUpdate')
+            }
+            componentDidUpdate(){
+                console.log('Inner componentDidUpdate')
+            }
+            componentWillUnmount(){
+                console.log('Inner componentWillUnmount')
+            }
+            componentWillReceiveProps(nextProps) {
+                console.log("Inner componentWillReceiveProps")
+                // this.props.changeAppState("inner change")
+                this.setState({
+                    innerP: "change",
+                })
+            }
+            render() {
+                return  <div className={this.props.className}><p>xxx{111}</p><p>{this.state.innerP}</p></div> 
+            }
+
+        }
+        class Inner2 extends React.Component{
+            constructor(props){
+                super(props)
+                this.state = {
+                    innerP: "init",
+                }
+            }
+            componentWillMount(){
+                console.log('Inner2 componentWillMount')
+            }
+            componentDidMount(){
+                console.log('Inner2 componentDidMount')
+            }
+             componentWillUpdate(){
+                console.log('Inner2 componentWillUpdate')
+            }
+            componentWillUnmount(){
+                console.log('Inner2 componentWillUnmount')
+            }
+            componentWillReceiveProps(nextProps) {
+                console.log("componentWillReceiveProps")
+                this.setState({
+                    innerP: "change",
+                })
+            }
+            render() {
+                return  <div className={this.props.className}><p>yyy</p><p>{this.state.innerP}</p></div>
+            }
+
+        }
+
+var s 
+window.onload = function(){
+   s = ReactDOM.render( <App/>, document.getElementById('example'))
+}
+    </script>
+
+</head>
+
+<body>
+
+    <div>开发者工具</div>
+    <div id='example'></div>
+<!-- <select disabled value='aaa' multiple>
+    <option>sss</option>
+      <option>aaa</option>
+        <option>bbb</option>
+          <option>ccc</option>
+</select> -->
+
+</body>
+
+</html>
