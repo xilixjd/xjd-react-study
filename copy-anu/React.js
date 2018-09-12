@@ -10,10 +10,14 @@ function Component(props, context) {
     this.__pendingStates = [];
     this.__current = {}
     /*
-    * this.__hydrating = true 表示组件正在根据虚拟DOM合成真实DOM
+    * this.__mounting = true 表示组件正在根据虚拟DOM合成真实DOM
     * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
     * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
     */
+}
+
+function Stateless(render) {
+
 }
 /* ==========================================Component========================================== */
 
@@ -63,6 +67,7 @@ function createElement(type, config, children) {
     }
 
     if (typeNumber(type) === 5) {
+        debugger
         // 有 render 则 type 为 Component vtype = 2，没有则为 statelessComponent，vtype = 4
         vtype = type.prototype && type.prototype.render ? 2 : 4
         var defaultProps = type.defaultProps
@@ -137,6 +142,22 @@ function _flattenChildren(original, convert) {
                 }
 
             if (childType < 6) {
+                if (lastText && convert) {
+                    //false模式下不进行合并与转换
+                    children[0].text = child + children[0].text;
+                    continue;
+                }
+                child = child + '';
+                if (convert) {
+                    child = {
+                        type: "#text",
+                        text: child,
+                        vtype: 0
+                    };
+                }
+                lastText = true;
+            } else if (childType === 8 && !child.type) {
+                child = JSON.stringify(child)
                 if (lastText && convert) {
                     //false模式下不进行合并与转换
                     children[0].text = child + children[0].text;
@@ -455,7 +476,7 @@ var mountTypeDict = {
     0: mountText,
     1: mountElement,
     2: mountComponent,
-    // 4: mountStateless,
+    4: mountStateless,
     // 10: updateText,
     // 11: updateElement,
     // 12: updateComponent,
@@ -530,7 +551,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 function renderComponent(vnode, props, context) {
     var lastOwn = CurrentOwner.cur
     CurrentOwner.cur = this
-    var rendered = this.__render ? this.__render(props, context) : this.render()
+    var rendered = this.__StatelessRender ? this.__StatelessRender(props, context) : this.render()
     CurrentOwner.cur = lastOwn
     this.context = context
     this.props = props
@@ -540,6 +561,30 @@ function renderComponent(vnode, props, context) {
     vnode._hostNode = dom
     vnode._renderedVnode = rendered
     return rendered
+}
+
+function Stateless(render) {
+    this.ref = {}
+    this.__StatelessRender = render
+    this.__current = {}
+}
+
+Stateless.prototype.render = renderComponent
+
+function mountStateless(vnode, context, prevRendered, mountQueue) {
+    var type = vnode.type,
+        ref = vnode.ref,
+        props = vnode.props
+    var instance = new Stateless(type)
+    var rendered = instance.render(vnode, props, context)
+    var dom = mountVnode(rendered, context, prevRendered, mountQueue)
+    
+    if (ref) {
+        pendingRefs.push(ref.bind(null, null))
+    }
+
+    vnode._hostNode = dom
+    return dom
 }
 
 function render(vnode, container) {
