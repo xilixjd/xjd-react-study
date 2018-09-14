@@ -16,28 +16,50 @@ function Component(props, context) {
     */
 }
 
-function Stateless(render) {
-
+Component.prototype = {
+    setState: function setState(state, cb) {
+        setStateImpl.call(a, b, c)
+    },
+    __mergeState: function __mergeState(nextProps, nextContext) {
+        let length = this.__pendingStates.length
+        if (length === 0) {
+            return this.state
+        }
+        let states = clearArray(this.__pendingStates)
+        let nextStates = Object.assign({}, states)
+        for (var i = 0; i < length; i++) {
+            var state = states
+            Object.assign(nextStates, typeNumber(state) === 5 ? state.call(this, ))
+        }
+    }
 }
+
+function Stateless(render) {
+    this.ref = {}
+    this.__StatelessRender = render
+    this.__current = {}
+}
+
+Stateless.prototype.render = renderComponent
 /* ==========================================Component========================================== */
 
 /* ==========================================createElement========================================== */
-var CurrentOwner = {
+let CurrentOwner = {
     cur: null
 }
 
 function createElement(type, config, children) {
-    var props = {}
+    let props = {}
     // props 是否为空 若为 0 则为空
-    var checkProps = 0
+    let checkProps = 0
     // 浏览器 dom element vtype = 1
-    var vtype = 1
-    var key = null
-    var ref = null
+    let vtype = 1
+    let key = null
+    let ref = null
 
     if (typeNumber(config) === 8) {
-        for (var c in config) {
-            var val = config[c]
+        for (let c in config) {
+            let val = config[c]
             if (c === "key") {
                 if (typeNumber(val) >= 2) {
                     key = val + ""
@@ -53,26 +75,25 @@ function createElement(type, config, children) {
         }
     }
 
-    var childrenLength = arguments.length - 2
+    let childrenLength = arguments.length - 2
     if (childrenLength === 1) {
         if (typeNumber(children) !== 0) {
             props.children = children
         }
     } else if (childrenLength > 1) {
-        var childrenArray = Array(childrenLength)
-        for (var i = 0; i < childrenLength; i++) {
+        let childrenArray = Array(childrenLength)
+        for (let i = 0; i < childrenLength; i++) {
             childrenArray[i] = arguments[i + 2]
         }
         props.children = childrenArray
     }
 
     if (typeNumber(type) === 5) {
-        debugger
         // 有 render 则 type 为 Component vtype = 2，没有则为 statelessComponent，vtype = 4
         vtype = type.prototype && type.prototype.render ? 2 : 4
-        var defaultProps = type.defaultProps
+        let defaultProps = type.defaultProps
         if (defaultProps) {
-            for (var propName in defaultProps) {
+            for (let propName in defaultProps) {
                 // 当有 defaultProps 时，要判断 props 是否有这个属性，没有的话才能赋值，否则不用赋值
                 if (typeNumber(props[propName]) === 0) {
                     checkProps = 1
@@ -89,7 +110,7 @@ function Vnode(type, key, ref, props, vtype, checkProps) {
     this.type = type
     this.props = props
     this.vtype = vtype
-    var owner = CurrentOwner.cur
+    let owner = CurrentOwner.cur
     this._owner = owner
     if (key) {
         this.key = key
@@ -112,10 +133,10 @@ Vnode.prototype = {
 }
 
 function _flattenChildren(original, convert) {
-    var children = [],
+    let children = [],
         temp,
         lastText,
-        child;
+        child
     if (Array.isArray(original)) {
         temp = original.slice(0);
     } else {
@@ -129,17 +150,16 @@ function _flattenChildren(original, convert) {
                 //兼容Immutable.js
                 child = child.toJS();
             }
-            for (var i = 0; i < child.length; i++) {
+            for (let i = 0; i < child.length; i++) {
                 temp[temp.length] = child[i];
             }
         } else {
             // eslint-disable-next-line
-            var childType = typeNumber(child);
+            let childType = typeNumber(child);
 
-            if (childType < 3 // 0, 1, 2
-            ) {
-                    continue;
-                }
+            if (childType < 3 ) {
+                continue;
+            }
 
             if (childType < 6) {
                 if (lastText && convert) {
@@ -157,6 +177,7 @@ function _flattenChildren(original, convert) {
                 }
                 lastText = true;
             } else if (childType === 8 && !child.type) {
+                // 针对 <a>{this.props}</a> props 可能是 object 形式，这种情况要对 object 进行转换
                 child = JSON.stringify(child)
                 if (lastText && convert) {
                     //false模式下不进行合并与转换
@@ -182,8 +203,8 @@ function _flattenChildren(original, convert) {
     return children;
 }
 
-function flattenChildren(vnode) {
-    var arr = _flattenChildren(vnode.props.children, true);
+function flattenVChildrenToVnode(vnode) {
+    let arr = _flattenChildren(vnode.props.children, true);
     if (arr.length == 0) {
         arr = [];
     }
@@ -195,8 +216,8 @@ function flattenChildren(vnode) {
 /* ==========================================util========================================== */
 // 根据 type 创建真实 dom
 function createDOMElement(vnode) {
-    var type = vnode.type
-    var dom
+    let type = vnode.type
+    let dom
     if (type === "#text") {
         dom = document.createTextNode(vnode.text)
     } else if (type === "#comment") {
@@ -209,8 +230,8 @@ function createDOMElement(vnode) {
 
 // 对比对象是否相等
 function objectCompare(obj1, obj2) {
-    var obj1Stringfy
-    var obj2Stringfy
+    let obj1Stringfy
+    let obj2Stringfy
     try {
         obj1Stringfy = JSON.stringify(obj1)
     } catch (e) {
@@ -226,7 +247,7 @@ function objectCompare(obj1, obj2) {
     return obj1Stringfy === obj2Stringfy
 }
 
-var numberMap = {
+let numberMap = {
     //null undefined IE6-8这里会返回[object Object]
     "[object Boolean]": 2,
     "[object Number]": 3,
@@ -244,13 +265,21 @@ function typeNumber(data) {
     if (data === void 666) {
         return 0;
     }
-    var a = numberMap[Object.prototype.toString.call(data)];
+    let a = numberMap[Object.prototype.toString.call(data)];
     return a || 8;
+}
+
+/**
+ * 清除原数组参数并返回
+ * @param {数组} arr 
+ */
+function clearArray(arr) {
+    return arr.splice(0, arr.length)
 }
 /* ==========================================util========================================== */
 
 /* ==========================================event========================================== */
-var globalEventsDict = {}
+let globalEventsDict = {}
 
 function addGlobalEvent(name) {
     if (!globalEventsDict[name]) {
@@ -267,16 +296,19 @@ function addEvent(el, eventType, fn, bool) {
     }
 }
 
-function dispatchEvent(e) {
+function dispatchEvent(e, type, end) {
     e = new SyntheticEvent(e)
-    var eventType = e.type
+    if (type) {
+        e.type = type
+    }
+    let eventType = e.type
     if (eventType === "click") {
         if (e.target.disabled) {
             return
         }
     }
-    var paths = collectPaths(e.target, end || document)
-    var captured = eventType + "capture"
+    let paths = collectPaths(e.target, end || document)
+    let captured = eventType + "capture"
 
     options.async = true
     // 捕获阶段
@@ -290,9 +322,9 @@ function dispatchEvent(e) {
 }
 
 function collectPaths(from, end) {
-    var paths = []
+    let paths = []
     while (from !== end && from.nodeType === 1) {
-        var events = from.__events
+        let events = from.__events
         if (events) {
             paths.push({
                 dom: from,
@@ -305,9 +337,9 @@ function collectPaths(from, end) {
 }
 
 function triggerEventFlow(paths, eventType, e) {
-    for (var i = paths.length - 1; i >= 0; i--) {
-        var path = paths[i]
-        var fn = path.events[eventType]
+    for (let i = paths.length - 1; i >= 0; i--) {
+        let path = paths[i]
+        let fn = path.events[eventType]
         if (typeNumber(fn) === 5) {
             e.currentTarget = path.dom
             fn.call(path.dom, e)
@@ -322,7 +354,7 @@ function SyntheticEvent(event) {
     if (event.nativeEvent) {
         return event
     }
-    for (var i in event) {
+    for (let i in event) {
         if (!eventProto[i]) {
             this[i] = event[i]
         }
@@ -333,10 +365,10 @@ function SyntheticEvent(event) {
     this.nativeEvent = event
 }
 
-var eventProto = SyntheticEvent.prototype = {
+let eventProto = SyntheticEvent.prototype = {
     fixEvent: function fixEvent() {},
     preventDefault: function preventDefault() {
-        var e = this.nativeEvent || {}
+        let e = this.nativeEvent || {}
         e.returnValue = this.returnValue = false
         if (e.preventDefault) {
             e.preventDefault()
@@ -344,7 +376,7 @@ var eventProto = SyntheticEvent.prototype = {
     },
     fixHooks: function fixHooks() {},
     stopPropagation: function stopPropagation() {
-        var e = this.nativeEvent || {}
+        let e = this.nativeEvent || {}
         e.cancelBubble = this._stopPropagation = true
         if (e.stopPropagation) {
             e.stopPropagation()
@@ -357,13 +389,13 @@ var eventProto = SyntheticEvent.prototype = {
 }
 /* ==========================================event========================================== */
 
-var pendingRefs = []
+let pendingRefs = []
 
-var dirtyComponent = []
+let dirtyComponents = []
 
-var nullFunc = function() {}
+let nullFunc = function() {}
 
-var options = {
+let options = {
     beforeUnmount: nullFunc,
     afterMount: nullFunc,
     afterUpdate: nullFunc,
@@ -375,7 +407,7 @@ options.enqueueUpdate = function (instance) {
     dirtyComponents.push(instance);
 }
 
-var specialProps = {
+let specialProps = {
     children: 1,
     style: 1,
     className: 1,
@@ -395,16 +427,16 @@ function getPropsHookType(name, val, type, dom) {
     }
 }
 
-var propsHook = {
+let propsHook = {
     children: nullFunc,
     style: function style(dom, _, val, lastProps) {
-        var oldStyle = lastProps.style || {}
-        var newStyle = val || {}
+        let oldStyle = lastProps.style || {}
+        let newStyle = val || {}
         if (objectCompare(oldStyle, newStyle) === true) {
             return
         }
-        for (var name in newStyle) {
-            var val = newStyle[name]
+        for (let name in newStyle) {
+            let val = newStyle[name]
             if (val !== oldStyle[name]) {
                 if (/^-?\d+(\.\d+)?$/.test(val)) {
                     val += "px"
@@ -413,7 +445,7 @@ var propsHook = {
             }
         }
         // 旧样式中存在，新样式没有的，需要清除
-        for (var name in oldStyle) {
+        for (let name in oldStyle) {
             if (!(name in newStyle)) {
                 dom.style[name] = ""
             }
@@ -423,14 +455,14 @@ var propsHook = {
         dom.className = val
     },
     __event__: function __event__(dom, name, val, lastProps) {
-        var domEvents = dom.__events || (dom.__events = {})
+        let domEvents = dom.__events || (dom.__events = {})
         if (!val) {
             delete domEvents[name.slice(2)]
         } else {
             // vnode 第一次 mount 的时候没有这个事件，则要绑定全局事件
             // 然而当 update 来 diffProps 时，lastProps 与第一次 mount 的事件一致时
             // 不用再绑定
-            var _name = name.slice(2).toLowerCase()
+            let _name = name.slice(2).toLowerCase()
             if (!lastProps[name]) {
                 addGlobalEvent(_name)
             }
@@ -450,29 +482,31 @@ var propsHook = {
 
 function diffProps(nextProps, lastProps, vnode, dom) {
     // 首先更新 props
-    for (var name in nextProps) {
-        var val = nextProps[name]
+    for (let name in nextProps) {
+        let val = nextProps[name]
         if (val !== lastProps[name]) {
-            var hookType = getPropsHookType(name, val, vnode.type, dom)
+            let hookType = getPropsHookType(name, val, vnode.type, dom)
             propsHook[hookType](dom, name, val, lastProps)
         }
     }
 
-    for (var name in lastProps) {
+    for (let name in lastProps) {
         if (!nextProps.hasOwnProperty(name)) {
-            var hookType = getPropsHookType(name, "", vnode.type, dom)
+            let hookType = getPropsHookType(name, "", vnode.type, dom)
             propsHook[hookType](dom, name, "", lastProps)
         }
     }
 }
 
+/* ==========================================mountordiff========================================== */
+
 function mountVnode(vnode, context, prevRendered, mountQueue) {
-    var vtype = vnode.vtype
+    let vtype = vnode.vtype
     return mountTypeDict[vtype](vnode, context, prevRendered, mountQueue)
 }
 
 // 根据 vnode.vtype 来实现 mount 或 update
-var mountTypeDict = {
+let mountTypeDict = {
     0: mountText,
     1: mountElement,
     2: mountComponent,
@@ -484,17 +518,17 @@ var mountTypeDict = {
 }
 
 function mountText(vnode) {
-    var node = createDOMElement(vnode)
+    let node = createDOMElement(vnode)
     vnode._hostNode = node
     return node
 }
 
 function mountElement(vnode, context, prevRendered, mountQueue) {
-    var type = vnode.type
-    var props = vnode.props
-    var ref = vnode.ref
+    let type = vnode.type
+    let props = vnode.props
+    let ref = vnode.ref
 
-    var dom = createDOMElement(vnode)
+    let dom = createDOMElement(vnode)
     vnode._hostNode = dom
 
     mountChildren(vnode, dom, context, mountQueue)
@@ -511,19 +545,19 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
 }
 
 function mountChildren(vnode, parentNode, context, mountQueue) {
-    var children = flattenChildren(vnode)
-    for (var i = 0; i < children.length; i++) {
-        var child = children[i]
-        var dom = mountVnode(child, context, null, mountQueue)
+    let children = flattenVChildrenToVnode(vnode)
+    for (let i = 0; i < children.length; i++) {
+        let child = children[i]
+        let dom = mountVnode(child, context, null, mountQueue)
         parentNode.appendChild(dom)
     }
 }
 
 function mountComponent(vnode, context, prevRendered, mountQueue) {
-    var type = vnode.type,
+    let type = vnode.type,
         ref = vnode.ref,
         props = vnode.props
-    var instance = new type(props, context)
+    let instance = new type(props, context)
     vnode._instance = instance
 
     if (instance.componentWillMount) {
@@ -533,11 +567,11 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     }
 
     // dom element vnode
-    var rendered = renderComponent.call(instance, vnode, props, context)
+    let rendered = renderComponent.call(instance, vnode, props, context)
     instance.__mounting = true
     instance.__childContext = context
 
-    var dom = mountVnode(rendered, context, prevRendered, mountQueue)
+    let dom = mountVnode(rendered, context, prevRendered, mountQueue)
     vnode._hostNode = dom
     mountQueue.push(instance)
     if (ref) {
@@ -549,35 +583,27 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 }
 
 function renderComponent(vnode, props, context) {
-    var lastOwn = CurrentOwner.cur
+    let lastOwn = CurrentOwner.cur
     CurrentOwner.cur = this
-    var rendered = this.__StatelessRender ? this.__StatelessRender(props, context) : this.render()
+    let rendered = this.__StatelessRender ? this.__StatelessRender(props, context) : this.render()
     CurrentOwner.cur = lastOwn
     this.context = context
     this.props = props
     vnode._instance = this
-    var dom = this.__current._hostNode
+    let dom = this.__current._hostNode
     this.__current = vnode
     vnode._hostNode = dom
     vnode._renderedVnode = rendered
     return rendered
 }
 
-function Stateless(render) {
-    this.ref = {}
-    this.__StatelessRender = render
-    this.__current = {}
-}
-
-Stateless.prototype.render = renderComponent
-
 function mountStateless(vnode, context, prevRendered, mountQueue) {
-    var type = vnode.type,
+    let type = vnode.type,
         ref = vnode.ref,
         props = vnode.props
-    var instance = new Stateless(type)
-    var rendered = instance.render(vnode, props, context)
-    var dom = mountVnode(rendered, context, prevRendered, mountQueue)
+    let instance = new Stateless(type)
+    let rendered = instance.render(vnode, props, context)
+    let dom = mountVnode(rendered, context, prevRendered, mountQueue)
     
     if (ref) {
         pendingRefs.push(ref.bind(null, null))
@@ -587,15 +613,17 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
     return dom
 }
 
+/* ==========================================mountordiff========================================== */
+
 function render(vnode, container) {
     return renderByXjdReact(vnode, container)
 }
 
 function renderByXjdReact(vnode, container) {
-    var parentContext = {}
-    var mountQueue = []
-    var prevRendered = null
-    var rootNode = mountVnode(vnode, parentContext, prevRendered, mountQueue)
+    let parentContext = {}
+    let mountQueue = []
+    let prevRendered = null
+    let rootNode = mountVnode(vnode, parentContext, prevRendered, mountQueue)
     container.appendChild(rootNode)
     container.__component = vnode
     clearRefsAndMounts(mountQueue)
@@ -604,7 +632,7 @@ function renderByXjdReact(vnode, container) {
 
 // clearRefs componentDidMount 生命周期
 function clearRefsAndMounts(queue) {
-    var refs = pendingRefs.slice(0)
+    let refs = pendingRefs.slice(0)
     pendingRefs.length = 0
     refs.forEach(function(fn) {
         fn()
@@ -625,7 +653,7 @@ function clearRefsAndMounts(queue) {
     queue.length = 0
 }
 
-var React = {
+let React = {
     render: render,
     options: options,
     Component: Component,
