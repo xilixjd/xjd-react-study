@@ -18,9 +18,9 @@ function Component(props, context) {
 
 Component.prototype = {
     setState: function setState(state, cb) {
-        setStateImpl.call(a, b, c)
+        setStateImpl.call(this, state, cb)
     },
-    __mergeState: function __mergeState(nextProps, nextContext) {
+    __mergeStates: function __mergeStates(nextProps, nextContext) {
         let length = this.__pendingStates.length
         if (length === 0) {
             return this.state
@@ -29,8 +29,47 @@ Component.prototype = {
         let nextStates = Object.assign({}, states)
         for (var i = 0; i < length; i++) {
             var state = states
-            Object.assign(nextStates, typeNumber(state) === 5 ? state.call(this, ))
+            var nextState = typeNumber(state) === 5 ? state.call(this, nextStates, nextProps, nextContext) : state
+            Object.assign(nextStates, nextState)
         }
+        return nextStates
+    },
+    render: function render() {}
+}
+
+function setStateImpl(state, cb) {
+    if (typeNumber(cb) === 5) {
+        this.__pendingCallbacks.push(cb)
+    }
+    this.__pendingStates.push(state)
+
+    let hasDom = this.__current._hostNode
+    if (!hasDom) {
+        //组件挂载期，willMount 时会调用
+        if (this.__mounting) {
+            // ??? 这里没找到场景
+            //在挂载过程中，子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+            this.__renderInNextCycle = true;
+        }
+    } else {
+        //组件更新期
+        if (this.__receiving) {
+            //componentWillReceiveProps中的setState/forceUpdate应该被忽略 
+            return;
+        }
+        this.__renderInNextCycle = true;
+        if (options.async) {
+            //在事件句柄中执行setState会进行合并
+            options.enqueueUpdate(this);
+            return;
+        }
+        if (this.__mounting) {
+            // 在componentDidMount里调用自己的setState，延迟到下一周期更新
+            // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+            return;
+        }
+        //  不在生命周期钩子内执行setState
+        options.flushBatchedUpdates([this]);
     }
 }
 
@@ -563,7 +602,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     if (instance.componentWillMount) {
         instance.componentWillMount()
         // todo
-        // instance.state = instance.__mergeState(props, context)
+        // instance.state = instance.__mergeStates(props, context)
     }
 
     // dom element vnode
@@ -590,9 +629,10 @@ function renderComponent(vnode, props, context) {
     this.context = context
     this.props = props
     vnode._instance = this
-    let dom = this.__current._hostNode
     this.__current = vnode
-    vnode._hostNode = dom
+    // ??? 这里怎么都会为 undefined
+    // let dom = this.__current._hostNode
+    // vnode._hostNode = dom
     vnode._renderedVnode = rendered
     return rendered
 }
