@@ -11,7 +11,7 @@ function Component(props, context) {
     this.__current = {}
     /*
     * this.__mounting = true 表示组件正在根据虚拟DOM合成真实DOM
-    * this.__renderInNextCycle = true 表示组件需要在下一周期重新渲染
+    * this.__renderInNext = true 表示组件需要在下一周期重新渲染
     * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
     */
 }
@@ -49,7 +49,7 @@ function setStateImpl(state, cb) {
         if (this.__mounting) {
             // ??? 这里没找到场景
             //在挂载过程中，子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
-            this.__renderInNextCycle = true;
+            this.__renderInNext = true;
         }
     } else {
         //组件更新期
@@ -57,7 +57,7 @@ function setStateImpl(state, cb) {
             //componentWillReceiveProps中的setState/forceUpdate应该被忽略 
             return;
         }
-        this.__renderInNextCycle = true;
+        this.__renderInNext = true;
         if (options.async) {
             //在事件句柄中执行setState会进行合并
             options.enqueueUpdate(this);
@@ -65,7 +65,7 @@ function setStateImpl(state, cb) {
         }
         if (this.__mounting) {
             // 在componentDidMount里调用自己的setState，延迟到下一周期更新
-            // 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
+            // ??? 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
             return;
         }
         //  不在生命周期钩子内执行setState
@@ -556,6 +556,10 @@ let mountTypeDict = {
     // 14: updateStateless
 }
 
+/* ==========================================mountordiff========================================== */
+
+/* ==========================================mount========================================== */
+
 function mountText(vnode) {
     let node = createDOMElement(vnode)
     vnode._hostNode = node
@@ -653,7 +657,30 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
     return dom
 }
 
-/* ==========================================mountordiff========================================== */
+/* ==========================================mount========================================== */
+
+/* ==========================================diff========================================== */
+
+function _refeshComponent(instance, dom, mountQueue) {
+    var lastProps = instance.lastProps,
+        lastContext = instance.lastContext,
+        lastState = instance.state,
+        nextContext = instance.context,
+        vnode = instance.__current,
+        nextProps = instance.props
+    
+    lastProps = lastProps || nextProps
+    var nextState = instance.__mergeStates(nextProps, nextContext)
+    instance.props = lastProps
+
+    instance.__renderInNext = null
+    if (instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+        return dom
+    }
+    
+}
+
+/* ==========================================diff========================================== */
 
 function render(vnode, container) {
     return renderByXjdReact(vnode, container)
@@ -689,6 +716,9 @@ function clearRefsAndMounts(queue) {
             // todo
             _refeshComponent(instance, instance.__current._hostNode, [])
         }
+        clearArray(instance.__pendingCallbacks).forEach(function(fn) {
+            fn.call(instance)
+        })
     })
     queue.length = 0
 }
