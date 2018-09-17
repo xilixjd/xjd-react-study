@@ -660,6 +660,8 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
 /* ==========================================mount========================================== */
 
 /* ==========================================diff========================================== */
+var contextStatus = []
+var contextHasChange = false
 
 function _refeshComponent(instance, dom, mountQueue) {
     var lastProps = instance.lastProps,
@@ -671,13 +673,58 @@ function _refeshComponent(instance, dom, mountQueue) {
     
     lastProps = lastProps || nextProps
     var nextState = instance.__mergeStates(nextProps, nextContext)
+    // ??? 为何要赋值？
     instance.props = lastProps
 
     instance.__renderInNext = null
     if (instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
         return dom
     }
-    
+    instance.__mounting = true
+    if (instance.componentWillUpdate) {
+        instance.componentWillUpdate(nextProps, nextState, nextContext)
+    }
+    instance.props = nextProps
+    instance.state = nextState
+
+    let lastRendered = vnode._renderedVnode
+    var nextElement = instance.__next || vnode
+    if (!lastRendered._hostNode) {
+        lastRendered._hostNode = dom
+    }
+    var rendered = renderComponent.call(instance, nextElement)
+    delete instance.__next
+
+    // ??? context 部分不懂
+    contextStatus.push(contextHasChange)
+
+    let prevChildContext = instance.__childContext
+    instance.__childContext = nextContext
+    contextHasChange = Object.keys(prevChildContext).length === 0 +
+        Object.keys(nextContext).length === 0 && prevChildContext !== nextContext
+
+    dom = alignVnode(lastRendered, rendered, dom, nextContext, mountQueue)
+
+    contextHasChange = contextStatus.pop()
+
+    nextElement._hostNode = dom
+
+    if (instance.componentDidUpdate) {
+        instance.__didUpdate = true
+        // ???
+        instance.componentDidUpdate(lastProps, lastState, lastContext)
+        if (!instance.__renderInNext) {
+            instance.__didUpdate = false
+        }
+    }
+
+    instance.__mounting = false
+
+    options.afterUpdate(instance)
+    if (instance.__renderInNext && mountQueue.mountAll) {
+        mountQueue.push(instance);
+    }
+    return dom
 }
 
 /* ==========================================diff========================================== */
