@@ -550,10 +550,10 @@ let mountTypeDict = {
     1: mountElement,
     2: mountComponent,
     4: mountStateless,
-    // 10: updateText,
-    // 11: updateElement,
-    // 12: updateComponent,
-    // 14: updateStateless
+    10: updateText,
+    11: updateElement,
+    12: updateComponent,
+    14: updateStateless
 }
 
 /* ==========================================mountordiff========================================== */
@@ -701,7 +701,7 @@ function _refeshComponent(instance, dom, mountQueue) {
     let prevChildContext = instance.__childContext
     instance.__childContext = nextContext
     contextHasChange = Object.keys(prevChildContext).length === 0 +
-        Object.keys(nextContext).length === 0 && prevChildContext !== nextContext
+        Object.keys(nextContext).length === 0 && objectCompare(prevChildContext, nextContext)
 
     dom = alignVnode(lastRendered, rendered, dom, nextContext, mountQueue)
 
@@ -711,8 +711,8 @@ function _refeshComponent(instance, dom, mountQueue) {
 
     if (instance.componentDidUpdate) {
         instance.__didUpdate = true
-        // ???
         instance.componentDidUpdate(lastProps, lastState, lastContext)
+        // ???
         if (!instance.__renderInNext) {
             instance.__didUpdate = false
         }
@@ -721,10 +721,19 @@ function _refeshComponent(instance, dom, mountQueue) {
     instance.__mounting = false
 
     options.afterUpdate(instance)
+    // ??? instance.__renderInNext 在上面就已经赋为 null 了
     if (instance.__renderInNext && mountQueue.mountAll) {
         mountQueue.push(instance);
     }
     return dom
+}
+
+function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
+    var dom = node
+    // ??? 这里只会出现 div 等 dom 
+    if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
+
+    }
 }
 
 /* ==========================================diff========================================== */
