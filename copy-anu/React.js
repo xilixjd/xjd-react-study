@@ -654,6 +654,7 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
     }
 
     vnode._hostNode = dom
+    vnode._instance = instance
     return dom
 }
 
@@ -730,12 +731,73 @@ function _refeshComponent(instance, dom, mountQueue) {
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node
-    // ??? 这里只会出现 div 等 dom 
+    // ??? 这里只会出现 div 等 dom (vtype 只能等于 1)？
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
+        disposeVnode(lastVnode)
+        dom = mountVnode(nextVnode, context, null, mountQueue)
+        var parent = node.parentNode
+        if (parent) {
+            parent.replaceChild(dom, node)
+            node = null
+        }
+        clearRefsAndMounts(mountQueue)
+    } else {
+        dom = updateVnode(lastVnode, nextVnode, context, mountQueue)
+    }
+    return dom
+}
 
+function disposeVnode(vnode) {
+    if (!vnode || vnode._disposed) {
+        return
+    }
+    switch (vnode.vtype) {
+        case 1:
+            disposeElement(vnode)
+            break
+        case 2:
+            disposeComponent(vnode)
+            break
+        case 4:
+            disposeStateless(vnode)
+            break
+    }
+    vnode._disposed = true
+}
+
+function disposeElement(vnode) {
+    let vchildren = vnode.vchildren
+    for (let i = 0; i < vchildren.length; i++) {
+        disposeVnode(vchildren[i])
+    }
+    vnode.ref && vnode.ref(null)
+}
+
+function disposeComponent(vnode) {
+    let instance = vnode._instance
+    if (instance) {
+        options.beforeUnmount(instance)
+        if (instance.componentWillUnMount) {
+            instance.componentWillUnMount()
+        }
+        let dom = instance.__current._hostNode
+        if (dom) {
+            dom.__current = null
+        }
+        vnode.ref && vnode.ref(null)
+        instance.setState = nullFunc
+        vnode._instance = instance.__current = instance.__renderInNext = null
+        disposeVnode(vnode._renderedVnode)
     }
 }
 
+function disposeStateless(vnode) {
+    let instance = vnode._instance
+    if (instance) {
+        disposeVnode(instance._renderedVnode)
+        vnode._instance = null
+    }
+}
 /* ==========================================diff========================================== */
 
 function render(vnode, container) {
