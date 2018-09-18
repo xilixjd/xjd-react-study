@@ -742,7 +742,7 @@ function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
         }
         clearRefsAndMounts(mountQueue)
     } else {
-        dom = updateVnode(lastVnode, nextVnode, context, mountQueue)
+        dom = updateVnoade(lastVnode, nextVnode, context, mountQueue)
     }
     return dom
 }
