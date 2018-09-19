@@ -267,6 +267,18 @@ function createDOMElement(vnode) {
     return dom
 }
 
+function removeDOMElement(node) {
+    if (node.nodeType === 1) {
+        node.textContent = ""
+    }
+    node.__events = null
+    let fragment = document.createDocumentFragment()
+    // ??? 靠这个方法删除父节点中的子节点 node
+    fragment.appendChild(node)
+    fragment.removeChild(node)
+    node = null
+}
+
 // 对比对象是否相等
 function objectCompare(obj1, obj2) {
     let obj1Stringfy
@@ -664,6 +676,89 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
 var contextStatus = []
 var contextHasChange = false
 
+function updateVnode(lastVnode, nextVnode, context, mountQueue) {
+    return mountTypeDict[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue)
+}
+
+function updateText(lastVnode, nextVnode) {
+    let dom = lastVnode._hostNode
+    nextVnode._hostNode = dom
+    if (lastVnode.text !== nextVnode.text) {
+        dom.nodeValue = nextVnode.text
+    }
+    return dom
+}
+
+function updateElement(lastVnode, nextVnode, context, mountQueue) {
+    let dom = lastVnode._hostNode
+    let lastProps = lastVnode.props
+    let nextProps = nextVnode.props
+    let ref = nextVnode.ref
+    nextVnode._hostNode = dom
+    updateChildren(lastVnode, nextVnode, nextVnode._hostNode, context, mountQueue)
+    if (lastVnode.checkProps || nextVnode.checkProps) {
+        diffProps(nextProps, lastProps, nextVnode, lastVnode, dom)
+    }
+    if (ref) {
+        pendingRefs.push(ref.bind(null, dom))
+    }
+    return dom
+}
+
+function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
+    let lastChildren = lastVnode.vchildren
+    let nextChildren = flattenVChildrenToVnode(nextVnode)
+    let childNodes = parentNode.childNodes
+    let mountAll = mountQueue.mountAll
+    if (nextChildren.length === 0) {
+        lastChildren.forEach(function(lastChild) {
+            let node = lastChild._hostNode
+            if (node) {
+                removeDOMElement(node)
+            }
+            disposeVnode(lastChild)
+        })
+        return
+    }
+    let hashCode = {}
+    lastChildren.forEach(function(lastChild) {
+        let key = lastChild.type + (lastChild.key || "")
+        let list = hashCode[key]
+        if (list) {
+            list.push(lastChild)
+        } else {
+            hashCode[key] = [lastChild]
+        }
+    })
+    nextChildren.forEach(function(nextChild) {
+        let key = nextChild.type + (nextChild || "")
+        let list = hashCode[key]
+        if (list) {
+            let old = list.shift()
+            if (old) {
+                // 将 nextChild 设一个 key 为 old，方便之后的对比
+                nextChild.old = old
+                if (!list.length) {
+                    delete hashCode[key]
+                }
+            }
+        }
+    })
+    for (let key in hashCode) {
+        let list = hashCode[key]
+        if (Array.isArray(list)) {
+            list.forEach(function(lastChild) {
+                let node = lastChild._hostNode
+                if (node) {
+                    removeDOMElement(node)
+                }
+                disposeVnode(lastChild)
+            })
+        }
+    }
+    
+}
+
 function _refeshComponent(instance, dom, mountQueue) {
     var lastProps = instance.lastProps,
         lastContext = instance.lastContext,
@@ -738,11 +833,12 @@ function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
         var parent = node.parentNode
         if (parent) {
             parent.replaceChild(dom, node)
-            node = null
+            removeDOMElement(node)
         }
         clearRefsAndMounts(mountQueue)
     } else {
-        dom = updateVnoade(lastVnode, nextVnode, context, mountQueue)
+        // ??? 这里需要判断一下 lastVnode 和 nextVnode 是否相等，然而基本无法判断
+        dom = updateVnode(lastVnode, nextVnode, context, mountQueue)
     }
     return dom
 }
