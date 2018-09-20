@@ -267,6 +267,14 @@ function createDOMElement(vnode) {
     return dom
 }
 
+function insertDOM(parentNode, dom, child) {
+    if (!child) {
+        parentNode.appendChild(dom)
+    } else {
+        parentNode.insertBefore(dom, ref)
+    }
+}
+
 function removeDOMElement(node) {
     if (node.nodeType === 1) {
         node.textContent = ""
@@ -756,7 +764,30 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             })
         }
     }
-    
+    nextChildren.forEach(function(el, index) {
+        let old = el.old,
+            child,
+            dom,
+            queue = mountAll ? mountQueue : []
+        if (old) {
+            delete el.old
+            if (el === old && old._hostNode && !contextHasChange) {
+                dom = old._hostNode
+            } else {
+                dom = updateVnode(old, el, context, queue)
+            }
+        } else {
+            dom = mountVnode(el, context, null, queue)
+        }
+        child = childNodes[index]
+        if (dom !== ref) {
+            insertDOM(parentNode, dom, child)
+        }
+        if (!mountAll && queue.length) {
+            clearRefsAndMounts(queue)
+        }
+    })
+
 }
 
 function _refeshComponent(instance, dom, mountQueue) {
