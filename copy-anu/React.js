@@ -713,11 +713,36 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
     return dom
 }
 
+/**
+ * 只适用于同样的 component props 变化时才调用
+ * @param {*} lastVnode 
+ * @param {*} nextVnode 
+ * @param {*} context 
+ * @param {*} mountQueue 
+ */
+function updateComponent(lastVnode, nextVnode, context, mountQueue) {
+    let instance = nextVnode._instance = lastVnode._instance
+    // 在 refreshComponent 里用
+    instance.__next = nextVnode
+    let nextProps = nextVnode.props
+    instance.lastProps = instance.props
+
+}
+
+/**
+ * 当移动节点时是不对比的，也就是顺序变化有可能会导致重新渲染，但是这种渲染场景并不多
+ * @param {*} lastVnode 
+ * @param {*} nextVnode 
+ * @param {*} parentNode 
+ * @param {*} context 
+ * @param {*} mountQueue 
+ */
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     let lastChildren = lastVnode.vchildren
     let nextChildren = flattenVChildrenToVnode(nextVnode)
     let childNodes = parentNode.childNodes
     let mountAll = mountQueue.mountAll
+    // 若 nextChildren 长度为 0，则将旧节点全部删除
     if (nextChildren.length === 0) {
         lastChildren.forEach(function(lastChild) {
             let node = lastChild._hostNode
@@ -739,7 +764,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         }
     })
     nextChildren.forEach(function(nextChild) {
-        let key = nextChild.type + (nextChild || "")
+        let key = nextChild.type + (nextChild.key || "")
         let list = hashCode[key]
         if (list) {
             let old = list.shift()
@@ -780,7 +805,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             dom = mountVnode(el, context, null, queue)
         }
         child = childNodes[index]
-        if (dom !== ref) {
+        if (dom !== child) {
             insertDOM(parentNode, dom, child)
         }
         if (!mountAll && queue.length) {
