@@ -88,6 +88,7 @@ let CurrentOwner = {
 }
 
 function createElement(type, config, children) {
+    debugger
     let props = {}
     // props 是否为空 若为 0 则为空
     let checkProps = 0
@@ -684,6 +685,86 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
 var contextStatus = []
 var contextHasChange = false
 
+function refreshComponent(instance, mountQueue) {
+    let dom = instance.__current._hostNode
+    dom = _refeshComponent(instance, dom, mountQueue)
+    // ??? 这里有必要？
+    // while (instance.__renderInNextCycle) {
+    //     dom = _refreshComponent(instance, dom, mountQueue);
+    // }
+
+    clearArray(instance.__pendingCallbacks).forEach(function(fn) {
+        fn.call(instance)
+    })
+
+    return dom
+}
+
+function _refeshComponent(instance, dom, mountQueue) {
+    var lastProps = instance.lastProps,
+        lastContext = instance.lastContext,
+        lastState = instance.state,
+        nextContext = instance.context,
+        vnode = instance.__current,
+        nextProps = instance.props
+    
+    lastProps = lastProps || nextProps
+    var nextState = instance.__mergeStates(nextProps, nextContext)
+    // ??? 为何要赋值？
+    instance.props = lastProps
+
+    instance.__renderInNext = null
+    if (instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+        return dom
+    }
+    instance.__mounting = true
+    if (instance.componentWillUpdate) {
+        instance.componentWillUpdate(nextProps, nextState, nextContext)
+    }
+    instance.props = nextProps
+    instance.state = nextState
+
+    let lastRendered = vnode._renderedVnode
+    var nextElement = instance.__next || vnode
+    if (!lastRendered._hostNode) {
+        lastRendered._hostNode = dom
+    }
+    var rendered = renderComponent.call(instance, nextElement, nextProps, nextContext)
+    delete instance.__next
+
+    // ??? context 部分不懂
+    contextStatus.push(contextHasChange)
+
+    let prevChildContext = instance.__childContext
+    instance.__childContext = nextContext
+    contextHasChange = Object.keys(prevChildContext).length === 0 +
+        Object.keys(nextContext).length === 0 && objectCompare(prevChildContext, nextContext)
+
+    dom = alignVnode(lastRendered, rendered, dom, nextContext, mountQueue)
+
+    contextHasChange = contextStatus.pop()
+
+    nextElement._hostNode = dom
+
+    if (instance.componentDidUpdate) {
+        instance.__didUpdate = true
+        instance.componentDidUpdate(lastProps, lastState, lastContext)
+        // ???
+        if (!instance.__renderInNext) {
+            instance.__didUpdate = false
+        }
+    }
+
+    instance.__mounting = false
+
+    options.afterUpdate(instance)
+    // ??? instance.__renderInNext 在上面就已经赋为 null 了
+    if (instance.__renderInNext && mountQueue.mountAll) {
+        mountQueue.push(instance);
+    }
+    return dom
+}
+
 function updateVnode(lastVnode, nextVnode, context, mountQueue) {
     return mountTypeDict[lastVnode.vtype + 10](lastVnode, nextVnode, context, mountQueue)
 }
@@ -705,7 +786,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
     nextVnode._hostNode = dom
     updateChildren(lastVnode, nextVnode, nextVnode._hostNode, context, mountQueue)
     if (lastVnode.checkProps || nextVnode.checkProps) {
-        diffProps(nextProps, lastProps, nextVnode, lastVnode, dom)
+        diffProps(nextProps, lastProps, nextVnode, dom)
     }
     if (ref) {
         pendingRefs.push(ref.bind(null, dom))
@@ -725,12 +806,35 @@ function updateComponent(lastVnode, nextVnode, context, mountQueue) {
     // 在 refreshComponent 里用
     instance.__next = nextVnode
     let nextProps = nextVnode.props
-    instance.lastProps = instance.props
+    instance.lastProps = instance.props // lastVnode.props
+    instance.lastContext = instance.context
 
+    if (instance.componentWillReceiveProps) {
+        instance.__receiving = true
+        instance.componentWillReceiveProps(nextProps, context)
+        instance.__receiving = false
+    }
+
+    instance.props = nextProps
+    instance.context = context
+    if (nextVnode.ref) {
+        pendingRefs.push(nextVnode.ref.bind(null, instance))
+    }
+
+    return refreshComponent(instance, mountQueue)
+}
+
+function updateStateless(lastTypeVnode, nextTypeVnode, context, mountQueue) {
+    let instance = lastTypeVnode._instance
+    let lastVnode = lastTypeVnode._renderedVnode
+    let nextVnode = instance.render(nextTypeVnode, nextTypeVnode.props, context)
+    let dom = alignVnode(lastVnode, nextVnode, lastVnode._hostNode, context, mountQueue)
+    nextTypeVnode._hostNode = dom
+    return dom
 }
 
 /**
- * 当移动节点时是不对比的，也就是顺序变化有可能会导致重新渲染，但是这种渲染场景并不多
+ * 当移动节点时是不对比的，如倒转顺序，也就是顺序变化有可能会导致重新渲染，但是这种渲染场景并不多
  * @param {*} lastVnode 
  * @param {*} nextVnode 
  * @param {*} parentNode 
@@ -815,71 +919,6 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
 
 }
 
-function _refeshComponent(instance, dom, mountQueue) {
-    var lastProps = instance.lastProps,
-        lastContext = instance.lastContext,
-        lastState = instance.state,
-        nextContext = instance.context,
-        vnode = instance.__current,
-        nextProps = instance.props
-    
-    lastProps = lastProps || nextProps
-    var nextState = instance.__mergeStates(nextProps, nextContext)
-    // ??? 为何要赋值？
-    instance.props = lastProps
-
-    instance.__renderInNext = null
-    if (instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
-        return dom
-    }
-    instance.__mounting = true
-    if (instance.componentWillUpdate) {
-        instance.componentWillUpdate(nextProps, nextState, nextContext)
-    }
-    instance.props = nextProps
-    instance.state = nextState
-
-    let lastRendered = vnode._renderedVnode
-    var nextElement = instance.__next || vnode
-    if (!lastRendered._hostNode) {
-        lastRendered._hostNode = dom
-    }
-    var rendered = renderComponent.call(instance, nextElement)
-    delete instance.__next
-
-    // ??? context 部分不懂
-    contextStatus.push(contextHasChange)
-
-    let prevChildContext = instance.__childContext
-    instance.__childContext = nextContext
-    contextHasChange = Object.keys(prevChildContext).length === 0 +
-        Object.keys(nextContext).length === 0 && objectCompare(prevChildContext, nextContext)
-
-    dom = alignVnode(lastRendered, rendered, dom, nextContext, mountQueue)
-
-    contextHasChange = contextStatus.pop()
-
-    nextElement._hostNode = dom
-
-    if (instance.componentDidUpdate) {
-        instance.__didUpdate = true
-        instance.componentDidUpdate(lastProps, lastState, lastContext)
-        // ???
-        if (!instance.__renderInNext) {
-            instance.__didUpdate = false
-        }
-    }
-
-    instance.__mounting = false
-
-    options.afterUpdate(instance)
-    // ??? instance.__renderInNext 在上面就已经赋为 null 了
-    if (instance.__renderInNext && mountQueue.mountAll) {
-        mountQueue.push(instance);
-    }
-    return dom
-}
-
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node
     // ??? 这里只会出现 div 等 dom (vtype 只能等于 1)？
@@ -950,7 +989,7 @@ function disposeStateless(vnode) {
         vnode._instance = null
     }
 }
-/* ==========================================diff========================================== */
+/* ==========================================/diff========================================== */
 
 function render(vnode, container) {
     return renderByXjdReact(vnode, container)

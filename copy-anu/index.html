@@ -91,7 +91,7 @@
                         {/*this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />*/}
                         <Inner className={this.state.aaa}/>
                         {/*<button onClick={() => this.click()}>click</button>*/}
-                        {this.state.aaa === 'aaa' ? <button style={{fontSize: "50px"}} onClick={() => this.click1()}>click</button> : <button onClick={() => this.click2()}>click</button>}
+                        <button style={ this.state.aaa === 'aaa' ? {} : {fontSize: "50px"}} onClick={() => this.click1()}>click</button>
                         <input ref={this.inputRefFunc}/>
                         <A a={1}/>
                     </div>
@@ -105,6 +105,7 @@
                 super(props)
                 this.state = {
                     innerP: "init",
+                    num: 0
                 }
             }
             componentWillMount(){
@@ -112,6 +113,9 @@
             }
             componentDidMount(){
                 console.log('Inner componentDidMount')
+                this.setState({
+                    num: this.state.num + 1,
+                })
             }
             
             componentWillUpdate(){
@@ -128,10 +132,11 @@
                 // this.props.changeAppState("inner change")
                 this.setState({
                     innerP: "change",
+                    num: this.state.num + 1
                 })
             }
             render() {
-                return  <div className={this.props.className}><p>xxx{111}</p><p>{this.state.innerP}</p></div> 
+                return <div className={this.props.className}><p>xxx{111}</p><p>{this.state.innerP}</p><p>{this.state.num}</p></div> 
             }
 
         }
