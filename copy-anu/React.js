@@ -44,6 +44,7 @@ function setStateImpl(state, cb) {
     this.__pendingStates.push(state)
 
     let hasDom = this.__current._hostNode
+    debugger
     if (!hasDom) {
         //组件挂载期，willMount 时会调用
         if (this.__mounting) {
@@ -80,7 +81,7 @@ function Stateless(render) {
 }
 
 Stateless.prototype.render = renderComponent
-/* ==========================================Component========================================== */
+/* ==========================================/Component========================================== */
 
 /* ==========================================createElement========================================== */
 let CurrentOwner = {
@@ -249,7 +250,7 @@ function flattenVChildrenToVnode(vnode) {
     }
     return vnode.vchildren = arr;
 }
-/* ==========================================createElement========================================== */
+/* ==========================================/createElement========================================== */
 
 
 /* ==========================================util========================================== */
@@ -335,7 +336,7 @@ function typeNumber(data) {
 function clearArray(arr) {
     return arr.splice(0, arr.length)
 }
-/* ==========================================util========================================== */
+/* ==========================================/util========================================== */
 
 /* ==========================================event========================================== */
 let globalEventsDict = {}
@@ -446,7 +447,7 @@ let eventProto = SyntheticEvent.prototype = {
         this.stopImmediate = true;
     }
 }
-/* ==========================================event========================================== */
+/* ==========================================/event========================================== */
 
 let pendingRefs = []
 
@@ -576,7 +577,7 @@ let mountTypeDict = {
     14: updateStateless
 }
 
-/* ==========================================mountordiff========================================== */
+/* ==========================================/mountordiff========================================== */
 
 /* ==========================================mount========================================== */
 
@@ -678,7 +679,7 @@ function mountStateless(vnode, context, prevRendered, mountQueue) {
     return dom
 }
 
-/* ==========================================mount========================================== */
+/* ==========================================/mount========================================== */
 
 /* ==========================================diff========================================== */
 var contextStatus = []
@@ -1021,7 +1022,6 @@ function clearRefsAndMounts(queue) {
         instance.__mounting = false
         // 第一次 Mount 的时候 instance.__renderInNext 为 null
         while (instance.__renderInNext) {
-            // todo
             _refreshComponent(instance, instance.__current._hostNode, [])
         }
         clearArray(instance.__pendingCallbacks).forEach(function(fn) {

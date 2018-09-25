@@ -61,6 +61,15 @@
                 this.setState({
                     num: this.state.num + 1
                 })
+                var self = this
+                setTimeout(function() {
+                    self.setState({
+                        num: self.state.num + 1
+                    })
+                    // self.setState({
+                    //     num: self.state.num + 1
+                    // })
+                }, 0)
                 this.inputRef.focus()
             }
             click2() {
