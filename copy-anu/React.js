@@ -26,9 +26,9 @@ Component.prototype = {
             return this.state
         }
         let states = clearArray(this.__pendingStates)
-        let nextStates = Object.assign({}, states)
+        let nextStates = Object.assign({}, this.state)
         for (var i = 0; i < length; i++) {
-            var state = states
+            var state = states[i]
             var nextState = typeNumber(state) === 5 ? state.call(this, nextStates, nextProps, nextContext) : state
             Object.assign(nextStates, nextState)
         }
@@ -88,7 +88,6 @@ let CurrentOwner = {
 }
 
 function createElement(type, config, children) {
-    debugger
     let props = {}
     // props 是否为空 若为 0 则为空
     let checkProps = 0
@@ -687,7 +686,7 @@ var contextHasChange = false
 
 function refreshComponent(instance, mountQueue) {
     let dom = instance.__current._hostNode
-    dom = _refeshComponent(instance, dom, mountQueue)
+    dom = _refreshComponent(instance, dom, mountQueue)
     // ??? 这里有必要？
     // while (instance.__renderInNextCycle) {
     //     dom = _refreshComponent(instance, dom, mountQueue);
@@ -700,8 +699,8 @@ function refreshComponent(instance, mountQueue) {
     return dom
 }
 
-function _refeshComponent(instance, dom, mountQueue) {
-    var lastProps = instance.lastProps,
+function _refreshComponent(instance, dom, mountQueue) {
+    let lastProps = instance.lastProps,
         lastContext = instance.lastContext,
         lastState = instance.state,
         nextContext = instance.context,
@@ -709,7 +708,7 @@ function _refeshComponent(instance, dom, mountQueue) {
         nextProps = instance.props
     
     lastProps = lastProps || nextProps
-    var nextState = instance.__mergeStates(nextProps, nextContext)
+    let nextState = instance.__mergeStates(nextProps, nextContext)
     // ??? 为何要赋值？
     instance.props = lastProps
 
@@ -1023,7 +1022,7 @@ function clearRefsAndMounts(queue) {
         // 第一次 Mount 的时候 instance.__renderInNext 为 null
         while (instance.__renderInNext) {
             // todo
-            _refeshComponent(instance, instance.__current._hostNode, [])
+            _refreshComponent(instance, instance.__current._hostNode, [])
         }
         clearArray(instance.__pendingCallbacks).forEach(function(fn) {
             fn.call(instance)
