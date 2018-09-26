@@ -44,7 +44,6 @@ function setStateImpl(state, cb) {
     this.__pendingStates.push(state)
 
     let hasDom = this.__current._hostNode
-    debugger
     if (!hasDom) {
         //组件挂载期，willMount 时会调用
         if (this.__mounting) {
@@ -626,8 +625,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     if (instance.componentWillMount) {
         instance.componentWillMount()
-        // todo
-        // instance.state = instance.__mergeStates(props, context)
+        instance.state = instance.__mergeStates(props, context)
     }
 
     // dom element vnode

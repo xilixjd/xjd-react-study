@@ -63,12 +63,13 @@
                 })
                 var self = this
                 setTimeout(function() {
+                    debugger
                     self.setState({
                         num: self.state.num + 1
                     })
-                    // self.setState({
-                    //     num: self.state.num + 1
-                    // })
+                    self.setState({
+                        num: self.state.num + 1
+                    })
                 }, 0)
                 this.inputRef.focus()
             }
@@ -98,7 +99,7 @@
                     <div>
                         <h2>{this.state.num}</h2>
                         {/*this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />*/}
-                        <Inner className={this.state.aaa}/>
+                        <Inner />
                         {/*<button onClick={() => this.click()}>click</button>*/}
                         <button style={ this.state.aaa === 'aaa' ? {} : {fontSize: "50px"}} onClick={() => this.click1()}>click</button>
                         <input ref={this.inputRefFunc}/>
@@ -145,7 +146,7 @@
                 })
             }
             render() {
-                return <div className={this.props.className}><p>xxx{111}</p><p>{this.state.innerP}</p><p>{this.state.num}</p></div> 
+                return <div><p>xxx{111}</p><p>{this.state.num}</p></div> 
             }
 
         }
