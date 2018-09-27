@@ -271,7 +271,7 @@ function insertDOM(parentNode, dom, child) {
     if (!child) {
         parentNode.appendChild(dom)
     } else {
-        parentNode.insertBefore(dom, ref)
+        parentNode.insertBefore(dom, child)
     }
 }
 
@@ -758,6 +758,7 @@ function _refreshComponent(instance, dom, mountQueue) {
     options.afterUpdate(instance)
     // ??? instance.__renderInNext 在上面就已经赋为 null 了
     if (instance.__renderInNext && mountQueue.mountAll) {
+        debugger
         mountQueue.push(instance);
     }
     return dom
@@ -910,6 +911,8 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         if (dom !== child) {
             insertDOM(parentNode, dom, child)
         }
+        // mount 带来的 mountQueue 不能进入，这里 queue.length 只会在上面的 mountVnode 触发才会 push
+        // 而 diff 的时候只会在 diff new component 的时候才会 mountVnode 中 mountComponent，再 push 一个 component
         if (!mountAll && queue.length) {
             clearRefsAndMounts(queue)
         }
@@ -919,6 +922,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node
+    debugger
     // ??? 这里只会出现 div 等 dom (vtype 只能等于 1)？
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode)
@@ -996,7 +1000,10 @@ function render(vnode, container) {
 function renderByXjdReact(vnode, container) {
     let parentContext = {}
     let mountQueue = []
+    // 在 render 的时候需要给 mountQueue 加 mountAll 的属性，这样都后面
+    mountQueue.mountAll = true
     let prevRendered = null
+
     let rootNode = mountVnode(vnode, parentContext, prevRendered, mountQueue)
     container.appendChild(rootNode)
     container.__component = vnode
