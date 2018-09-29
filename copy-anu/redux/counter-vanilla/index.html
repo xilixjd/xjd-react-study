@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Redux basic example</title>
+    <script src="./Redux.js"></script>
+    <script src="./redux-thunk.js"></script>
+  </head>
+  <body>
+    <div>
+      <p>
+        Clicked: <span id="value">0</span> times
+        <button id="increment">+</button>
+        <button id="decrement">-</button>
+        <button id="incrementIfOdd">Increment if odd</button>
+        <button id="incrementAsync">Increment async</button>
+        <button id="multi2">multi2</button>
+        <button id="div2">div2</button>
+        <button id="add2">add2</button>
+        <button id="sub2">sub2</button>
+        <button id="init">init</button>
+      </p>
+    </div>
+    <script>
+      var counter = Redux.combineReducers({
+        counter1: counter1
+      })
+
+      function counter1(state, action) {
+        if (typeof state === 'undefined') {
+          return 0
+        }
+
+        switch (action.type) {
+          case 'INCREMENT':
+            return state + 1
+          case 'DECREMENT':
+            return state - 1
+          case 'MUTIPLY2':
+            return state * 2
+          case 'DIVISION2':
+            return state / 2
+          case 'ADD2':
+            return state + 2
+          case 'SUB2':
+            return state - 2
+          case 'INIT':
+            return action.data
+          default:
+            return state
+        }
+      }
+
+      function actionSub2(data) {
+        return {
+          type: 'INIT',
+          data: data
+        }
+      }
+
+      // function multyAndDiv(state, action) {
+      //   if (typeof state === 'undefined') {
+      //     return 0
+      //   }
+      //   switch (action.type) {
+      //     case 'MUTIPLY2':
+      //       return state * 2
+      //     case 'DIVISION2':
+      //       return state / 2
+      //     default:
+      //       return state
+      //   }
+      // }
+
+      // function addAndSub(state, action) {
+      //   if (typeof state === 'undefined') {
+      //     return 0
+      //   }
+      //   switch (action.type) {
+      //     case 'ADD2':
+      //       return state * 2
+      //     case 'SUB2':
+      //       return state / 2
+      //     default:
+      //       return state
+      //   }
+      // }
+      debugger
+      var store = Redux.createStore(counter, Redux.applyMiddleware(thunk))
+      var valueEl = document.getElementById('value')
+
+      function render() {
+        var state = store.getState()
+        valueEl.innerHTML = state.counter1.toString()
+      }
+
+      render()
+      store.subscribe(render)
+
+      document.getElementById('increment')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'INCREMENT' })
+        })
+
+      document.getElementById('decrement')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'DECREMENT' })
+        })
+
+      document.getElementById('multi2')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'MUTIPLY2' })
+        })
+      document.getElementById('div2')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'DIVISION2' })
+        })
+      document.getElementById('add2')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'ADD2' })
+        })
+      document.getElementById('sub2')
+        .addEventListener('click', function () {
+          store.dispatch({ type: 'SUB2' })
+        })
+      document.getElementById('init')
+        .addEventListener('click', function () {
+          store.dispatch(actionSub2(0))
+        })
+
+      document.getElementById('incrementIfOdd')
+        .addEventListener('click', function () {
+          if (store.getState() % 2 !== 0) {
+            store.dispatch({ type: 'INCREMENT' })
+          }
+        })
+
+      document.getElementById('incrementAsync')
+        .addEventListener('click', function () {
+          setTimeout(function () {
+            store.dispatch({ type: 'INCREMENT' })
+          }, 1000)
+        })
+    </script>
+  </body>
+</html>
