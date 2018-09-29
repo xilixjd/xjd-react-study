@@ -755,6 +755,7 @@ function _refreshComponent(instance, dom, mountQueue) {
 
     instance.__mounting = false
 
+    debugger
     options.afterUpdate(instance)
     // ??? instance.__renderInNext 在上面就已经赋为 null 了
     if (instance.__renderInNext && mountQueue.mountAll) {
@@ -922,7 +923,6 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node
-    debugger
     // ??? 这里只会出现 div 等 dom (vtype 只能等于 1)？
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         disposeVnode(lastVnode)

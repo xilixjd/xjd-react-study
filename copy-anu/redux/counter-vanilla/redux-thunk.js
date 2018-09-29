@@ -1,13 +1,19 @@
 
 function createThunkMiddleware(extraArgument) {
-  return ({ dispatch, getState }) => next => action => {
-    if (typeof action === 'function') {
-      return action(dispatch, getState, extraArgument);
-    }
+  return function (_ref) {
+    var dispatch = _ref.dispatch,
+        getState = _ref.getState;
+    return function (next) {
+      return function (action) {
+        if (typeof action === 'function') {
+          return action(dispatch, getState, extraArgument);
+        }
 
-    return next(action);
+        return next(action);
+      };
+    };
   };
 }
 
-const thunk = createThunkMiddleware();
+var thunk = createThunkMiddleware();
 thunk.withExtraArgument = createThunkMiddleware;
