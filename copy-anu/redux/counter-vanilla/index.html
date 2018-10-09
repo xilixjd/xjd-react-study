@@ -17,10 +17,12 @@
         <button id="div2">div2</button>
         <button id="add2">add2</button>
         <button id="sub2">sub2</button>
+        <button id="add-and-mult">addAndMult</button>
         <button id="init">init</button>
       </p>
     </div>
     <script>
+      debugger
       var counter = Redux.combineReducers({
         counter1: counter1
       })
@@ -57,6 +59,13 @@
         }
       }
 
+      function addAndMult2() {
+        return function(dispatch) {
+          dispatch({ type: 'INCREMENT' })
+          dispatch({ type: 'MUTIPLY2' })
+        }
+      }
+
       // function multyAndDiv(state, action) {
       //   if (typeof state === 'undefined') {
       //     return 0
@@ -86,6 +95,7 @@
       // }
       debugger
       var store = Redux.createStore(counter, Redux.applyMiddleware(thunk))
+      // var store = Redux.createStore(counter)
       var valueEl = document.getElementById('value')
 
       function render() {
@@ -93,8 +103,14 @@
         valueEl.innerHTML = state.counter1.toString()
       }
 
+      function log() {
+        var state = store.getState()
+        console.log(state)
+      }
+
       render()
-      store.subscribe(render)
+      var renderUnsubscribe = store.subscribe(render)
+      var logUnsubscribe = store.subscribe(log)
 
       document.getElementById('increment')
         .addEventListener('click', function () {
@@ -125,7 +141,13 @@
         })
       document.getElementById('init')
         .addEventListener('click', function () {
+          debugger
           store.dispatch(actionSub2(0))
+        })
+      document.getElementById('add-and-mult')
+        .addEventListener('click', function () {
+          debugger
+          store.dispatch(addAndMult2())
         })
 
       document.getElementById('incrementIfOdd')
