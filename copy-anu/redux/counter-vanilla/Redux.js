@@ -750,7 +750,7 @@ function applyMiddleware() {
       };
       chain = middlewares.map(function (middleware) {
         return middleware(middlewareAPI);
-      });
+			});
       _dispatch = compose.apply(undefined, chain)(store.dispatch);
 
       return _extends({}, store, {

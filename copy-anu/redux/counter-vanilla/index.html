@@ -60,7 +60,7 @@
       }
 
       function addAndMult2() {
-        return function(dispatch) {
+        return function(dispatch, getState) {
           dispatch({ type: 'INCREMENT' })
           dispatch({ type: 'MUTIPLY2' })
         }
@@ -94,7 +94,8 @@
       //   }
       // }
       debugger
-      var store = Redux.createStore(counter, Redux.applyMiddleware(thunk))
+      // var store = Redux.createStore(counter, Redux.applyMiddleware(thunk))
+      var store = Redux.createStore(counter, Redux.applyMiddleware(myThunk, thunk))
       // var store = Redux.createStore(counter)
       var valueEl = document.getElementById('value')
 
