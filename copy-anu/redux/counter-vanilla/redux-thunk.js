@@ -1,9 +1,9 @@
 
 function createThunkMiddleware(extraArgument) {
   // middleware(middlewareAPI)
-  return function (store) {
-    var dispatch = store.dispatch,
-        getState = store.getState;
+  return function (middlewareAPI) {
+    var dispatch = middlewareAPI.dispatch,
+        getState = middlewareAPI.getState;
     return function (next) {
       // 调用 store.dispatch 时即为此匿名 function
       return function (action) {
@@ -22,9 +22,9 @@ var thunk = createThunkMiddleware();
 thunk.withExtraArgument = createThunkMiddleware;
 
 function myThunkMiddleware() {
-  return function (store) {
-    var dispatch = store.dispatch,
-        getState = store.getState
+  return function (middlewareAPI) {
+    var dispatch = middlewareAPI.dispatch,
+        getState = middlewareAPI.getState
     return function (next) {
       return function(action) {
         console.log('prev', getState())

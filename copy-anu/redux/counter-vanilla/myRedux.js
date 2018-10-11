@@ -103,9 +103,66 @@ let Redux = (function() {
         let finalReducersKeys = Object.keys(finalReducers)
 
         return function combination(state = {}, action) {
-            let hasChanged = false
-            
+            // let hasChanged = false
+            let nextState = {}
+            for (let i = 0; i < finalReducersKeys.length; i++) {
+                let key = finalReducersKeys[i]
+                let reducer = finalReducers[key]
+                let previousStateForKey = state[key]
+                let nextStateForKey = reducer(previousStateForKey, action)
+                nextState[key] = nextStateForKey
+                // 这里我觉得没必要判断，因为 nextStateForKey 为对象的话必然是不相等
+                // 就算是相等的，那比较一下又有什么意义呢
+                // hasChanged = hasChanged || nextStateForKey !== previousStateForKey
+            }
+            // return hasChanged ? nextState : state
+            return nextState
         }
+    }
+
+    function applyMiddleware(...middlewares) {
+        return (createStore) => (reducer, preloadedState, enhancer) => {
+            let store = createStore(reducer, preloadedState, enhancer)
+            let dispatch = store.dispatch
+            let chain = []
+
+            let middlewareAPI = {
+                getState: store.getState,
+                dispatch: (action) => {
+                    return dispatch(action)
+                }
+            }
+
+            chain = middlewares.map((middleware) => {
+                return middleware(middlewareAPI)
+            })
+            composeFunc = compose(...chain)
+            dispatch = composeFunc(store.dispatch)
+
+            return {
+                ...store,
+                dispatch
+            }
+        }
+    }
+
+    function compose(...funcs) {
+        // 传什么 return 什么
+        if (funcs.length === 0) {
+            return arg => arg
+        }
+        // 只有一个 func 相当于没用 compose
+        if (funcs.length === 1) {
+            return funcs[0]
+        }
+        return funcs.reduce((a, b) => (...args) => a(b(...args)))
+    }
+
+    return {
+        createStore,
+        combineReducers,
+        applyMiddleware,
+        compose
     }
 
 })()
