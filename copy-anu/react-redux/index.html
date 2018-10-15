@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+<script src="../myReact.js"></script>
+<script src="../babel.js"></script>
+<script src="../redux/counter-vanilla/myRedux.js"></script>
+<script src="./react-redux.js"></script>
+<script type='text/babel'>
+    class AddTodo extends React.Component {
+        constructor(props) {
+            super(props)
+            this.state = {
+                value: '',
+            }
+        }
+
+        changeValue(e) {
+            this.setState({
+                value: e.target.value
+            })
+        }
+
+        addTodo() {
+            let { dispatch } = this.props
+            dispatch(addTodo({
+                type: 'ADD_TODO',
+                text: this.state.value
+            }))
+            this.clear()
+        }
+
+        addCompletedTodo() {
+            let { dispatch } = this.props
+            dispatch(addTodo({
+                type: 'ADD_COMPLETE_TODO',
+                text: this.state.value
+            }))
+            this.clear()
+        }
+
+        clear() {
+            this.setState({
+                value: ''
+            })
+        }
+
+        render() {
+            return (
+                <div>
+                    <input onChange={() => this.changeValue} value={this.state.value}/>
+                    <button onClick={() => this.addTodo()}>未完成</button>
+                    <button onClick={() => this.addCompletedTodo()}>已完成</button>
+                </div>
+            )
+        }
+    }
+
+    AddTodo = connect()(AddTodo)
+
+    class TodoList extends React.Component {
+        render() {
+            let todos = this.props.todos
+            return (
+                <ul>
+                    {todos.map((todo) => (
+                        <li key={todo.id}>{todo.text}</li>
+                    ))}
+                </ul>
+            )
+        }
+    }
+
+    const getVisibleTodos = (todos, filter) => {
+        switch (filter) {
+            case 'SHOW_ALL':
+                return todos
+            case 'SHOW_COMPLETED':
+                return todos.filter(t => t.completed)
+            case 'SHOW_UNCOMPLETED':
+                return todos.filter(t => !t.completed)
+            default:
+                throw new Error('Unknown filter: ' + filter)
+        }
+    }
+
+    const mapTodoListStateToProps = (state) => ({
+        todos: getVisibleTodos(state.todos, state.visibilityFilter)
+    })
+
+    TodoList = connect(mapTodoListStateToProps)(TodoList)
+
+    class Footer extends React.Component {
+        render() {
+            return (
+                <div>
+                    <span onClick={() => this.changeToggle('SHOW_ALL')} className="active">全部</span>
+                    <span>已完成</span>
+                    <span>未完成</span>
+                </div>
+            )
+        }
+    }
+
+    /**********************************************redux*****************************************************/
+    let nextTodoId = 0
+    function addTodo({ type, text }) {
+        return {
+            type,
+            id: nextTodoId++,
+            text
+        }
+    }
+
+    function setVisibleTodo(filter) {
+        return {
+            type: 'VISIBLE_FILTER',
+            filter
+        }
+    }
+
+    const todos = (state = [], action) => {
+        switch (action.type) {
+            case 'ADD_TODO':
+                return [
+                    ...state,
+                    {
+                        id: action.id,
+                        text: action.text,
+                        completed: false
+                    }
+                ]
+            case 'ADD_COMPLETE_TODO':
+                return [
+                    ...state,
+                    {
+                        id: action.id,
+                        text: action.text,
+                        completed: true
+                    }
+                ]
+            default:
+                break;
+        }
+    }
+
+    /*********************************************\redux******************************************************/
+
+
+const App = () => (
+    <div>
+        <AddTodo/>
+        <TodoList/>
+        <Footer/>
+    </div>
+)
+
+var s
+let store = createStore(todoReducer)
+window.onload = function(){
+   s = ReactDOM.render((
+        <Provider store={store}>
+            <App/>
+        </Provider>
+   ), document.getElementById('example'))
+}
+</script>
+
+</head>
+
+<body>
+
+    <div id='example'></div>
+
+</body>
+
+</html>
