@@ -4,8 +4,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
+    <style>
+        .footer span {
+            border: 1px solid;
+            padding: 5px;
+        }
+        .active {
+            background-color: beige;
+        }
+    </style>
 
-<script src="../myReact.js"></script>
+<!-- <script src="../myReact.js"></script> -->
+<script src="../React.js"></script>
 <script src="../babel.js"></script>
 <script src="../redux/counter-vanilla/myRedux.js"></script>
 <script src="./react-redux.js"></script>
@@ -25,19 +35,27 @@
         }
 
         addTodo() {
+            let value = this.state.value
+            if (value.length === 0) {
+                return
+            }
             let { dispatch } = this.props
             dispatch(addTodo({
                 type: 'ADD_TODO',
-                text: this.state.value
+                text: value
             }))
             this.clear()
         }
 
         addCompletedTodo() {
+            let value = this.state.value
+            if (value.length === 0) {
+                return
+            }
             let { dispatch } = this.props
             dispatch(addTodo({
                 type: 'ADD_COMPLETE_TODO',
-                text: this.state.value
+                text: value
             }))
             this.clear()
         }
@@ -51,7 +69,7 @@
         render() {
             return (
                 <div>
-                    <input onChange={() => this.changeValue} value={this.state.value}/>
+                    <input onInput={(e)=>{this.changeValue(e)}} value={this.state.value}/>
                     <button onClick={() => this.addTodo()}>未完成</button>
                     <button onClick={() => this.addCompletedTodo()}>已完成</button>
                 </div>
@@ -59,7 +77,7 @@
         }
     }
 
-    AddTodo = connect()(AddTodo)
+    AddTodo = ReactRedux.connect()(AddTodo)
 
     class TodoList extends React.Component {
         render() {
@@ -67,13 +85,12 @@
             return (
                 <ul>
                     {todos.map((todo) => (
-                        <li key={todo.id}>{todo.text}</li>
+                        <li key={todo.id}>{todo.id + '.' + todo.text + (todo.completed ? '（已完成）' : '（未完成）')}</li>
                     ))}
                 </ul>
             )
         }
     }
-
     const getVisibleTodos = (todos, filter) => {
         switch (filter) {
             case 'SHOW_ALL':
@@ -86,27 +103,47 @@
                 throw new Error('Unknown filter: ' + filter)
         }
     }
-
     const mapTodoListStateToProps = (state) => ({
-        todos: getVisibleTodos(state.todos, state.visibilityFilter)
+        todos: getVisibleTodos(state.todos, state.filter)
     })
-
-    TodoList = connect(mapTodoListStateToProps)(TodoList)
+    TodoList = ReactRedux.connect(mapTodoListStateToProps)(TodoList)
 
     class Footer extends React.Component {
+        constructor(props) {
+            super(props)
+            this.state = {
+                active: 1,
+            }
+        }
+        changeToggle(filterType, activeType) {
+            let { dispatch, click } = this.props
+            dispatch(setVisibleTodo(filterType))
+            this.setState({
+                active: activeType
+            })
+            // click()
+        }
         render() {
             return (
-                <div>
-                    <span onClick={() => this.changeToggle('SHOW_ALL')} className="active">全部</span>
-                    <span>已完成</span>
-                    <span>未完成</span>
+                <div className="footer">
+                    <span onClick={() => this.changeToggle('SHOW_ALL', 1)} className={this.state.active === 1 ? 'active' : ''}>全部</span>
+                    <span onClick={() => this.changeToggle('SHOW_COMPLETED', 2)} className={this.state.active === 2 ? 'active' : ''}>已完成</span>
+                    <span onClick={() => this.changeToggle('SHOW_UNCOMPLETED', 3)} className={this.state.active === 3 ? 'active' : ''}>未完成</span>
                 </div>
             )
         }
     }
+    // const mapFooterDispatchToProps = (dispatch, ownProps) => {
+    //     return {
+    //         click: () => {
+    //             console.log('mapFooterDispatchToProps');
+    //         }
+    //     }
+    // }
+    Footer = ReactRedux.connect()(Footer)
 
     /**********************************************redux*****************************************************/
-    let nextTodoId = 0
+    let nextTodoId = 1
     function addTodo({ type, text }) {
         return {
             type,
@@ -117,8 +154,17 @@
 
     function setVisibleTodo(filter) {
         return {
-            type: 'VISIBLE_FILTER',
+            type: 'SET_FILTER',
             filter
+        }
+    }
+
+    const filter = (state = 'SHOW_ALL', action) => {
+        switch (action.type) {
+            case 'SET_FILTER':
+                return action.filter
+            default:
+                return state
         }
     }
 
@@ -143,30 +189,35 @@
                     }
                 ]
             default:
-                break;
+                return state
         }
     }
+
+    const reducer = Redux.combineReducers({
+        filter,
+        todos
+    })
+    const store = Redux.createStore(reducer)
 
     /*********************************************\redux******************************************************/
 
 
-const App = () => (
-    <div>
-        <AddTodo/>
-        <TodoList/>
-        <Footer/>
-    </div>
-)
+    const App = () => (
+        <div>
+            <AddTodo/>
+            <TodoList/>
+            <Footer/>
+        </div>
+    )
 
-var s
-let store = createStore(todoReducer)
-window.onload = function(){
-   s = ReactDOM.render((
-        <Provider store={store}>
-            <App/>
-        </Provider>
-   ), document.getElementById('example'))
-}
+    var s
+    window.onload = function(){
+        s = ReactDOM.render((
+                <ReactRedux.Provider store={store}>
+                    <App/>
+                </ReactRedux.Provider>
+        ), document.getElementById('example'))
+    }
 </script>
 
 </head>

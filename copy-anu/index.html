@@ -187,6 +187,10 @@ var s
 window.onload = function(){
    s = ReactDOM.render( <App/>, document.getElementById('example'))
 }
+var input = document.querySelector("#inputChange")
+input.oninput = function(e) {
+    console.log(e.target.value)
+}
     </script>
 
 </head>
@@ -195,6 +199,7 @@ window.onload = function(){
 
     <div>开发者工具</div>
     <div id='example'></div>
+    <input id="inputChange">
 <!-- <select disabled value='aaa' multiple>
     <option>sss</option>
       <option>aaa</option>

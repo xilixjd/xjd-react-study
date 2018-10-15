@@ -1,3 +1,5 @@
+// context 不对，所以 react-redux 无法使用
+
 /* ==========================================Component========================================== */
 function Component(props, context) {
     //防止用户在构造器生成JSX
@@ -1036,11 +1038,38 @@ function clearRefsAndMounts(queue) {
     queue.length = 0
 }
 
+// 为 react-redux 服务
+var Children = {
+    only: function only(children) {
+        //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
+        if (Array.isArray(children)) {
+            children = children[0];
+        }
+        if (children && children.vtype) return children;
+        throw new Error('expect only one child');
+    },
+    count: function count(children) {
+        return _flattenChildren(children, false).length;
+    },
+    forEach: function forEach(children, callback, context) {
+        _flattenChildren(children, false).forEach(callback, context);
+    },
+    map: function map(children, callback, context) {
+        return _flattenChildren(children, false).map(callback, context);
+    },
+
+    toArray: function toArray(children) {
+        return _flattenChildren(children, false);
+    }
+}
+
 let React = {
     render: render,
     options: options,
     Component: Component,
     createElement: createElement,
+    Children: Children
 }
 
-window.React = window.ReactDOM = React
+// 为 react-redux 服务
+window.react = window.React = window.ReactDOM = React
