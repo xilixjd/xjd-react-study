@@ -96,7 +96,7 @@
       // }
       debugger
       // var store = Redux.createStore(counter, Redux.applyMiddleware(thunk))
-      var store = Redux.createStore(counter, Redux.applyMiddleware(myThunk, thunk))
+      var store = Redux.createStore(counter, Redux.applyMiddleware(thunk, myThunk))
       // var store = Redux.createStore(counter)
       var valueEl = document.getElementById('value')
 
