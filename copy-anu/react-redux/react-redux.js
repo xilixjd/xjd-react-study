@@ -1198,6 +1198,7 @@ selectorFactory) {
       wrappedComponentName: wrappedComponentName,
       WrappedComponent: WrappedComponent
     });
+    debugger
 
     var Connect = function (_Component) {
       inherits(Connect, _Component);

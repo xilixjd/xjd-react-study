@@ -132,7 +132,6 @@
     const mapFooterDispatchToProps = (dispatch, ownProps) => {
         return {
             changeToggle: (filterType) => {
-                console.log("change")                
                 dispatch(setVisibleTodo(filterType))
             }
         }
