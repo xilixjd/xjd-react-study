@@ -76,7 +76,6 @@
             )
         }
     }
-
     AddTodo = ReactRedux.connect()(AddTodo)
 
     class TodoList extends React.Component {
@@ -115,32 +114,30 @@
                 active: 1,
             }
         }
-        changeToggle(filterType, activeType) {
-            let { dispatch, click } = this.props
-            dispatch(setVisibleTodo(filterType))
-            this.setState({
-                active: activeType
-            })
-            // click()
-        }
         render() {
             return (
                 <div className="footer">
-                    <span onClick={() => this.changeToggle('SHOW_ALL', 1)} className={this.state.active === 1 ? 'active' : ''}>全部</span>
-                    <span onClick={() => this.changeToggle('SHOW_COMPLETED', 2)} className={this.state.active === 2 ? 'active' : ''}>已完成</span>
-                    <span onClick={() => this.changeToggle('SHOW_UNCOMPLETED', 3)} className={this.state.active === 3 ? 'active' : ''}>未完成</span>
+                    <span onClick={() => this.props.changeToggle('SHOW_ALL')} className={this.props.filter === 'SHOW_ALL' ? 'active' : ''}>全部</span>
+                    <span onClick={() => this.props.changeToggle('SHOW_COMPLETED')} className={this.props.filter === 'SHOW_COMPLETED' ? 'active' : ''}>已完成</span>
+                    <span onClick={() => this.props.changeToggle('SHOW_UNCOMPLETED')} className={this.props.filter === 'SHOW_UNCOMPLETED' ? 'active' : ''}>未完成</span>
                 </div>
             )
         }
     }
-    // const mapFooterDispatchToProps = (dispatch, ownProps) => {
-    //     return {
-    //         click: () => {
-    //             console.log('mapFooterDispatchToProps');
-    //         }
-    //     }
-    // }
-    Footer = ReactRedux.connect()(Footer)
+    const mapFooterStateToProps = (state, ownProps) => {
+        return {
+            filter: state.filter
+        }
+    }
+    const mapFooterDispatchToProps = (dispatch, ownProps) => {
+        return {
+            changeToggle: (filterType) => {
+                console.log("change")                
+                dispatch(setVisibleTodo(filterType))
+            }
+        }
+    }
+    Footer = ReactRedux.connect(mapFooterStateToProps, mapFooterDispatchToProps)(Footer)
 
     /**********************************************redux*****************************************************/
     let nextTodoId = 1

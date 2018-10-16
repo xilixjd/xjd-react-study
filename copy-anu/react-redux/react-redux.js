@@ -1215,7 +1215,7 @@ selectorFactory) {
         _this.setWrappedInstance = _this.setWrappedInstance.bind(_this);
 
         invariant_1$2(_this.store, 'Could not find "' + storeKey + '" in either the context or props of ' + ('"' + displayName + '". Either wrap the root component in a <Provider>, ') + ('or explicitly pass "' + storeKey + '" as a prop to "' + displayName + '".'));
-
+        
         _this.initSelector();
         _this.initSubscription();
         return _this;
