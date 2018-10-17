@@ -1179,6 +1179,7 @@ selectorFactory) {
 
   var contextTypes = (_contextTypes = {}, _contextTypes[storeKey] = storeShape, _contextTypes[subscriptionKey] = subscriptionShape, _contextTypes);
   var childContextTypes = (_childContextTypes = {}, _childContextTypes[subscriptionKey] = subscriptionShape, _childContextTypes);
+  debugger
 
   return function wrapWithConnect(WrappedComponent) {
     invariant_1$2(typeof WrappedComponent == 'function', 'You must pass a component to the function returned by ' + ('connect. Instead received ' + JSON.stringify(WrappedComponent)));
@@ -1243,12 +1244,14 @@ selectorFactory) {
         // To handle the case where a child component may have triggered a state change by
         // dispatching an action in its componentWillMount, we have to re-run the select and maybe
         // re-render.
+        debugger
         this.subscription.trySubscribe();
         this.selector.run(this.props);
         if (this.selector.shouldComponentUpdate) this.forceUpdate();
       };
 
       Connect.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
+        debugger
         this.selector.run(nextProps);
       };
 
@@ -1298,6 +1301,7 @@ selectorFactory) {
       };
 
       Connect.prototype.onStateChange = function onStateChange() {
+        debugger
         this.selector.run(this.props);
 
         if (!this.selector.shouldComponentUpdate) {

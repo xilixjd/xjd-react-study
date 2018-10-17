@@ -1,5 +1,3 @@
-// context 不对，所以 react-redux 无法使用
-
 /* ==========================================Component========================================== */
 function Component(props, context) {
     //防止用户在构造器生成JSX
@@ -16,6 +14,13 @@ function Component(props, context) {
     * this.__renderInNext = true 表示组件需要在下一周期重新渲染
     * this.__forceUpdate = true 表示会无视shouldComponentUpdate的结果
     */
+}
+
+function getChildContext(instance, context) {
+    if (instance.getChildContext) {
+        return Object.assign({}, context, instance.getChildContext());
+    }
+    return context;
 }
 
 Component.prototype = {
@@ -633,9 +638,10 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     // dom element vnode
     let rendered = renderComponent.call(instance, vnode, props, context)
     instance.__mounting = true
+    let childContext = rendered.vtype ? getChildContext(instance, context) : context;
     instance.__childContext = context
 
-    let dom = mountVnode(rendered, context, prevRendered, mountQueue)
+    let dom = mountVnode(rendered, childContext, prevRendered, mountQueue)
     vnode._hostNode = dom
     mountQueue.push(instance)
     if (ref) {
@@ -725,22 +731,23 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.state = nextState
 
     let lastRendered = vnode._renderedVnode
-    var nextElement = instance.__next || vnode
+    let nextElement = instance.__next || vnode
     if (!lastRendered._hostNode) {
         lastRendered._hostNode = dom
     }
-    var rendered = renderComponent.call(instance, nextElement, nextProps, nextContext)
+    let rendered = renderComponent.call(instance, nextElement, nextProps, nextContext)
     delete instance.__next
+    let childContext = rendered.vtype ? getChildContext(instance, nextContext) : nextContext
 
     // ??? context 部分不懂
     contextStatus.push(contextHasChange)
 
     let prevChildContext = instance.__childContext
-    instance.__childContext = nextContext
+    instance.__childContext = childContext
     contextHasChange = Object.keys(prevChildContext).length === 0 +
-        Object.keys(nextContext).length === 0 && objectCompare(prevChildContext, nextContext)
+        Object.keys(childContext).length === 0 && objectCompare(prevChildContext, childContext)
 
-    dom = alignVnode(lastRendered, rendered, dom, nextContext, mountQueue)
+    dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue)
 
     contextHasChange = contextStatus.pop()
 
@@ -757,12 +764,10 @@ function _refreshComponent(instance, dom, mountQueue) {
 
     instance.__mounting = false
 
-    debugger
     options.afterUpdate(instance)
     // ??? instance.__renderInNext 在上面就已经赋为 null 了
     if (instance.__renderInNext && mountQueue.mountAll) {
-        debugger
-        mountQueue.push(instance);
+        mountQueue.push(instance)
     }
     return dom
 }
