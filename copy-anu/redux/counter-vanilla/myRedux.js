@@ -152,6 +152,8 @@ let Redux = (function() {
         }
     }
 
+    // actions = { add: func, toggle: func } =>
+    // { add: (...args) => dispatch(func(...args)), toggle: (...args) => dispatch(func(...args)) }
     function bindActionCreators(actionCreators, dispatch) {
         if (typeof actionCreators === "function") {
             return bindActionCreator(actionCreators, dispatch)
