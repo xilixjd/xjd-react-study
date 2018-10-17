@@ -146,6 +146,29 @@ let Redux = (function() {
         }
     }
 
+    function bindActionCreator(actionCreator, dispatch) {
+        return function(...args) {
+            return dispatch(actionCreator(...args))
+        }
+    }
+
+    function bindActionCreators(actionCreators, dispatch) {
+        if (typeof actionCreators === "function") {
+            return bindActionCreator(actionCreators, dispatch)
+        }
+
+        const keys = Object.keys(actionCreators)
+        const boundAcrionCreators = {}
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]
+            const actionCreator = actionCreators[key]
+            if (typeof actionCreator === "function") {
+                boundAcrionCreators[key] = bindActionCreator(actionCreator, dispatch)
+            }
+        }
+        return boundAcrionCreators
+    }
+
     function compose(...funcs) {
         // 传什么 return 什么
         if (funcs.length === 0) {
@@ -162,7 +185,8 @@ let Redux = (function() {
         createStore,
         combineReducers,
         applyMiddleware,
-        compose
+        bindActionCreators,
+        compose,
     }
 
 })()

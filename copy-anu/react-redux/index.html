@@ -136,7 +136,7 @@
             }
         }
     }
-    Footer = ReactRedux.connect(mapFooterStateToProps, mapFooterDispatchToProps)(Footer)
+    Footer = ReactRedux.connect(mapFooterStateToProps, mapFooterDispatchToProps, null, { withRef: true })(Footer)
 
     /**********************************************redux*****************************************************/
     let nextTodoId = 1

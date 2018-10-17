@@ -10,3 +10,6 @@
  * selector 还需要对 react 的 shouldComponentUpdate 等生命周期来进行重新封装，猜想是需要对被包裹的组件的生命周期进行应用
  */
 
+function connect(mapStateToProps, mapDispatchToProps, mergeProps, extraOptions) {
+    
+}
