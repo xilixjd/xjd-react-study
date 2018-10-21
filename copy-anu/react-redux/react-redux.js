@@ -1244,14 +1244,13 @@ selectorFactory) {
         // To handle the case where a child component may have triggered a state change by
         // dispatching an action in its componentWillMount, we have to re-run the select and maybe
         // re-render.
-        debugger
         this.subscription.trySubscribe();
         this.selector.run(this.props);
+        debugger
         if (this.selector.shouldComponentUpdate) this.forceUpdate();
       };
 
       Connect.prototype.componentWillReceiveProps = function componentWillReceiveProps(nextProps) {
-        debugger
         this.selector.run(nextProps);
       };
 
@@ -1634,7 +1633,9 @@ function verifyPlainObject(value, displayName, methodName) {
 }
 
 function wrapMapToPropsConstant(getConstant) {
+  debugger
   return function initConstantSelector(dispatch, options) {
+    debugger
     var constant = getConstant(dispatch, options);
 
     function constantSelector() {
@@ -1669,7 +1670,9 @@ function getDependsOnOwnProps(mapToProps) {
 //    the developer that their mapToProps function is not returning a valid result.
 //    
 function wrapMapToPropsFunc(mapToProps, methodName) {
+  debugger
   return function initProxySelector(dispatch, _ref) {
+    debugger
     var displayName = _ref.displayName;
 
     var proxy = function mapToPropsProxy(stateOrDispatch, ownProps) {
@@ -1679,6 +1682,7 @@ function wrapMapToPropsFunc(mapToProps, methodName) {
     // allow detectFactoryAndVerify to get ownProps
     proxy.dependsOnOwnProps = true;
 
+    // 这样写的原因应该是考虑到 props 为 function 的情况
     proxy.mapToProps = function detectFactoryAndVerify(stateOrDispatch, ownProps) {
       proxy.mapToProps = mapToProps;
       proxy.dependsOnOwnProps = getDependsOnOwnProps(mapToProps);
@@ -1845,6 +1849,11 @@ function pureFinalPropsSelectorFactory(mapStateToProps, mapDispatchToProps, merg
 
   function handleSubsequentCalls(nextState, nextOwnProps) {
     var propsChanged = !areOwnPropsEqual(nextOwnProps, ownProps);
+    debugger
+    // 这里的 nextState 和 state 是全局的，而且每个 connect 组件（含 dispatch）都要计算一遍 nextState
+    // 因为 dispatch 走的是 redux 的 listener
+    // 这里反复进行比较，好像只是为了不调用 mapStateToProps 和 mapDispatchToProps ???
+    // 那这里的必要性是否值得商榷
     var stateChanged = !areStatesEqual(nextState, state);
     state = nextState;
     ownProps = nextOwnProps;
@@ -1946,7 +1955,8 @@ function createConnect() {
         _ref2$areMergedPropsE = _ref2.areMergedPropsEqual,
         areMergedPropsEqual = _ref2$areMergedPropsE === undefined ? shallowEqual : _ref2$areMergedPropsE,
         extraOptions = objectWithoutProperties(_ref2, ['pure', 'areStatesEqual', 'areOwnPropsEqual', 'areStatePropsEqual', 'areMergedPropsEqual']);
-
+    
+    debugger
     var initMapStateToProps = match(mapStateToProps, mapStateToPropsFactories, 'mapStateToProps');
     var initMapDispatchToProps = match(mapDispatchToProps, mapDispatchToPropsFactories, 'mapDispatchToProps');
     var initMergeProps = match(mergeProps, mergePropsFactories, 'mergeProps');

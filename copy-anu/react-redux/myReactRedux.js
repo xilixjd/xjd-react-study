@@ -10,6 +10,86 @@
  * selector 还需要对 react 的 shouldComponentUpdate 等生命周期来进行重新封装，猜想是需要对被包裹的组件的生命周期进行应用
  */
 
-function connect(mapStateToProps, mapDispatchToProps, mergeProps, extraOptions) {
-    
+function getDependsOnOwnProps(mapToProps) {
+    return mapToProps.length !== 1
+}
+
+function wrapMapToPropsConstant(getConstant) {
+    return function initConstantSelector(dispatch, options) {
+        const constant = getConstant(dispatch, options)
+
+        function constantSelector() { return constant}
+        constantSelector.dependsOnOwnProps = true
+        return constantSelector
+    }
+}
+
+function wrapMapToPropsFunc(mapToProps) {
+    return function initProxySelecor() {
+        // 这里不考虑 mapStateToProps 或 mapDispatchToProps return 为 function 的情况
+        const proxy = function mapToPropsProxy(stateOrDispatch, ownProps) {
+            return proxy.dependsOnOwnProps
+                ? mapToProps(stateOrDispatch, ownProps)
+                : mapToProps(stateOrDispatch)
+        }
+        proxy.dependsOnOwnProps = getDependsOnOwnProps(mapToProps)
+
+        return proxy
+    }
+}
+
+function getInitMapStateToPropsWrap(mapStateToProp) {
+    return mapStateToProp ? wrapMapToPropsFunc(mapStateToProp) : wrapMapToPropsConstant(() => ({}))
+}
+
+function getInitMapDispatchToPropsWrap(mapDispatchToProps) {
+    // 这里不考虑 mapDispatchToProps 是 object 的情况
+    return mapDispatchToProps 
+            ? wrapMapToPropsFunc(mapDispatchToProps) 
+            : wrapMapToPropsConstant((dispatch) => ({ dispatch }))
+}
+
+function pureFinalPropsSelectorFactory()
+
+function selectFactory(dispatch, {
+    initMapStateToPropsWrap,
+    initMapDispatchToPropsWrap,
+    initMergePropsWrap,
+    ...options
+}) {
+    const mapStateToProps = initMapStateToPropsWrap(dispatch)
+    const mapDispatchToProps = initMapDispatchToPropsWrap(dispatch)
+    const mergeProps = initMergePropsWrap(dispatch)
+
+    return pureFinalPropsSelectorFactory(
+        mapStateToProps,
+        mapDispatchToProps,
+        mergeProps,
+        dispatch,
+        options
+    )
+}
+
+function connect(mapStateToProps, mapDispatchToProps, mergeProps, extraOptions = {}) {
+    // mapStateToProps 或 mapDispatchToProps 的返回不能为 function
+    // 输入参数 mergeProps 不做处理
+    const initMapStateToPropsWrap = getInitMapStateToPropsWrap(mapStateToProps)
+    const initMapDispatchToPropsWrap = getInitMapDispatchToPropsWrap(mapDispatchToProps)
+    const initMergePropsWrap = function() {
+        return function defaultMergeProps(stateProps, dispatchProps, ownProps) {
+            return {
+                ...ownProps,
+                ...stateProps,
+                ...dispatchProps
+            }
+        }
+    }
+
+    return connectAdvanced(selectFactory, {
+        shouldHandleStateChanges: Boolean(mapStateToProps),
+        initMapStateToPropsWrap,
+        initMapDispatchToPropsWrap,
+        initMergePropsWrap,
+        ...extraOptions
+    })
 }
