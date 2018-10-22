@@ -10,6 +10,41 @@
  * selector 还需要对 react 的 shouldComponentUpdate 等生命周期来进行重新封装，猜想是需要对被包裹的组件的生命周期进行应用
  */
 
+var hasOwn = Object.prototype.hasOwnProperty;
+
+function is(x, y) {
+    if (x === y) {
+        return x !== 0 || y !== 0 || 1 / x === 1 / y;
+    } else {
+        return x !== x && y !== y;
+    }
+}
+
+function shallowEqual(objA, objB) {
+    if (is(objA, objB)) return true;
+
+    if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+        return false;
+    }
+
+    var keysA = Object.keys(objA);
+    var keysB = Object.keys(objB);
+
+    if (keysA.length !== keysB.length) return false;
+
+    for (var i = 0; i < keysA.length; i++) {
+        if (!hasOwn.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+        return false;
+        }
+    }
+
+    return true;
+}
+
+function strictEqual(a, b) {
+    return a === b;
+}
+
 function getDependsOnOwnProps(mapToProps) {
     return mapToProps.length !== 1
 }
@@ -49,7 +84,39 @@ function getInitMapDispatchToPropsWrap(mapDispatchToProps) {
             : wrapMapToPropsConstant((dispatch) => ({ dispatch }))
 }
 
-function pureFinalPropsSelectorFactory()
+function pureFinalPropsSelectorFactory(
+    mapStateToProps,
+    mapDispatchToProps,
+    mergeProps,
+    dispatch,
+    options
+) {
+    let hasRunAtLeastOnce = false
+    let state
+    let ownProps
+    let stateProps
+    let dispatchProps
+    let mergedProps
+
+    function handleFirstCall(firstState, firstOwnProps) {
+        state = firstState
+        ownProps = firstOwnProps
+        stateProps = mapStateToProps(state, ownProps)
+        dispatchProps = mapDispatchToProps(dispatch, ownProps)
+        mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
+        hasRunAtLeastOnce = true
+        return mergedProps
+    }
+
+    function handleSubsequentCalls(nextState, nextOwnProps) {
+        const propsChanged = !shallowEqual(nextOwnProps, ownProps)
+        const stateChanged = !strictEqual(nextState, state)
+        state = nextState
+        ownProps = nextOwnProps
+
+        
+    }
+}
 
 function selectFactory(dispatch, {
     initMapStateToPropsWrap,
