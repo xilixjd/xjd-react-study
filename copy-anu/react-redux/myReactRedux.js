@@ -109,12 +109,55 @@ function pureFinalPropsSelectorFactory(
     }
 
     function handleSubsequentCalls(nextState, nextOwnProps) {
+        // nextState 是 redux 的全局 state
+        // 感觉做这些判断的唯一意义就是少调用一些 mapStateToProps？
+        // 所以也可以粗暴的直接全部 merge
         const propsChanged = !shallowEqual(nextOwnProps, ownProps)
         const stateChanged = !strictEqual(nextState, state)
         state = nextState
         ownProps = nextOwnProps
+        // props 改变了，说明依赖 ownProps 的方法全要改变
+        // state 改变了，说明一定要调用 mapStateToProps
+        if (propsChanged && stateChanged) return handleNewPropsAndNewState()
+        if (propsChanged) return handleNewProps()
+        if (stateChanged) return handleNewState()
+        return mergedProps
+    }
 
-        
+    function handleNewPropsAndNewState() {
+        stateProps = mapStateToProps(state, ownProps)
+        if (mapDispatchToProps.dependsOnOwnProps) {
+            dispatchProps = mapDispatchToProps(dispatch, ownProps)
+        }
+        mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
+        return mergedProps
+    }
+
+    function handleNewProps() {
+        if (mapStateToProps.dependsOnOwnProps) {
+            stateProps = mapStateToProps(state, ownProps)
+        }
+        if (mapDispatchToProps.dependsOnOwnProps) {
+            dispatchProps = mapDispatchToProps(dispatch, ownProps)
+        }
+        mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
+        return mergedProps
+    }
+
+    function handleNewState() {
+        const nextStateProps = mapStateToProps(state, ownProps)
+        const statePropsChanged = !shallowEqual(nextStateProps, stateProps)
+        stateProps = nextStateProps
+        if (statePropsChanged) {
+            mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
+        }
+        return mergedProps
+    }
+
+    return function pureFinalPropsSelector(nextState, nextOwnProps) {
+        return hasRunAtLeastOnce
+            ? handleSubsequentCalls(nextState, nextOwnProps)
+            : handleFirstCall(nextState, nextOwnProps)
     }
 }
 
