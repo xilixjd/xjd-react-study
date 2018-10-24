@@ -1283,6 +1283,7 @@ selectorFactory) {
       };
 
       Connect.prototype.initSubscription = function initSubscription() {
+        debugger
         if (!shouldHandleStateChanges) return;
 
         // parentSub's source should match where store came from: props vs. context. A component
@@ -1633,9 +1634,7 @@ function verifyPlainObject(value, displayName, methodName) {
 }
 
 function wrapMapToPropsConstant(getConstant) {
-  debugger
   return function initConstantSelector(dispatch, options) {
-    debugger
     var constant = getConstant(dispatch, options);
 
     function constantSelector() {
@@ -1670,9 +1669,7 @@ function getDependsOnOwnProps(mapToProps) {
 //    the developer that their mapToProps function is not returning a valid result.
 //    
 function wrapMapToPropsFunc(mapToProps, methodName) {
-  debugger
   return function initProxySelector(dispatch, _ref) {
-    debugger
     var displayName = _ref.displayName;
 
     var proxy = function mapToPropsProxy(stateOrDispatch, ownProps) {
@@ -1849,7 +1846,6 @@ function pureFinalPropsSelectorFactory(mapStateToProps, mapDispatchToProps, merg
 
   function handleSubsequentCalls(nextState, nextOwnProps) {
     var propsChanged = !areOwnPropsEqual(nextOwnProps, ownProps);
-    debugger
     // 这里的 nextState 和 state 是全局的，而且每个 connect 组件（含 dispatch）都要计算一遍 nextState
     // 因为 dispatch 走的是 redux 的 listener
     // 这里反复进行比较，好像只是为了不调用 mapStateToProps 和 mapDispatchToProps ???

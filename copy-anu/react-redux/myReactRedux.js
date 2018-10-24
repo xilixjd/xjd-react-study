@@ -203,3 +203,68 @@ function connect(mapStateToProps, mapDispatchToProps, mergeProps, extraOptions =
         ...extraOptions
     })
 }
+
+function makeSelectorStateful(sourceSelector, store) {
+    const selector = {
+        run: function runComponentSelector(props) {
+            try {
+                const nextProps = sourceSelector(store.getState(), props)
+                if (nextProps !== selector.props || selector.error) {
+                    selector.shouldComponentUpdate = true
+                    selector.props = nextProps
+                    selector.error = null
+                }
+            } catch (error) {
+                selector.shouldComponentUpdate = true
+                selector.error = error
+            }
+        }
+    }
+    return selector
+}
+
+function connectAdvanced(
+    selectFactory,
+    {
+        // 相当于默认参数，没有才是 true
+        shouldHandleStateChanges = true,
+        withRef = false,
+        ...connectOptions
+    } = {}
+) {
+    // 需引入 PropTypes
+    // const contextTypes = {
+    //     store: PropTypes.Object
+    // }
+    return function wrapWthConnect(WrappedComponent) {
+        const selectFactoryOptions = {
+            shouldHandleStateChanges,
+            withRef,
+            WrappedComponent,
+            ...connectOptions
+        }
+
+        class Connect extends Component {
+            constructor(props, context) {
+                super(props, context)
+                this.state = {}
+                // 由 Provider 组件传来
+                this.store = context["store"]
+
+                this.initSelector()
+                this.initSubscription()
+            }
+
+            initSelector() {
+                const sourceSelector = selectFactory(this.store.dispatch, selectFactoryOptions)
+                this.selector = makeSelectorStateful(sourceSelector, this.store)
+                this.selector.run(this.props)
+            }
+
+            initSubscription() {
+
+            }
+
+        }
+    }
+}
