@@ -1245,8 +1245,12 @@ selectorFactory) {
         // dispatching an action in its componentWillMount, we have to re-run the select and maybe
         // re-render.
         this.subscription.trySubscribe();
-        this.selector.run(this.props);
         debugger
+        // 这里 run 一下的意义是 ???
+        // 因为第一次 initSelector 时已调用，则 selector.props 一定等于 nextProps
+        // 那么 this.selector.shouldComponentUpdate 就不会为 true
+        // 那 this.forceUpdate() 也就不会被调用，而且我这边也确实没实现
+        this.selector.run(this.props);
         if (this.selector.shouldComponentUpdate) this.forceUpdate();
       };
 

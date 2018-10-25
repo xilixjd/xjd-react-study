@@ -250,9 +250,38 @@ function connectAdvanced(
                 this.state = {}
                 // 由 Provider 组件传来
                 this.store = context["store"]
+                this.subscription = null
 
+                // react-redux 用 selector 来保存 props 和触发 mapStateToProps，
+                // 用 class Subscription 来 subscribe onChange 事件
+                // 我觉得没有必要用 class Subscripiton
                 this.initSelector()
-                this.initSubscription()
+                // this.initSubscription()
+                this.trySubscribe()
+            }
+            componentDidMount() {
+                if (!shouldHandleStateChanges) return
+                // this.subscription.trySubscribe()
+                // 这里 run 一下的意义是 ???
+                // 因为第一次 initSelector 时已调用，则 selector.props 一定等于 nextProps
+                // 那么 this.selector.shouldComponentUpdate 就不会为 true
+                // 那 this.forceUpdate() 也就不会被调用，而且我这边 React 也确实没实现
+                this.selector.run(this.props)
+                if (this.selector.shouldComponentUpdate) this.forceUpdate()
+            }
+            componentWillReceiveProps(nextProps) {
+                // 基本进不来这个生命周期？
+                this.selector.run(nextProps)
+            }
+            shouldComponentUpdate() {
+                return this.selector.shouldComponentUpdate
+            }
+
+            getWrappedInstance() {
+                return this.wrappedInstance
+            }
+            setWrappedInstance(ref) {
+                this.wrappedInstance = ref
             }
 
             initSelector() {
@@ -260,11 +289,42 @@ function connectAdvanced(
                 this.selector = makeSelectorStateful(sourceSelector, this.store)
                 this.selector.run(this.props)
             }
-
-            initSubscription() {
-
+            trySubscribe() {
+                this.subscription = this.store.subscribe(this.onStateChange.bind(this))
+            }
+            onStateChange() {
+                this.selector.run(this.props)
+                if (this.selector.shouldComponentUpdate) {
+                    this.setState({})
+                }
             }
 
+            addExtraProps(props) {
+                if (withRef) {
+                    return {
+                        ...props,
+                        ref: this.setWrappedInstance
+                    }
+                } else {
+                    return props
+                }
+            }
+
+            render() {
+                const selector = this.selector
+                selector.shouldComponentUpdate = false
+
+                if (selector.error) {
+                    throw selector.error
+                } else {
+                    return React.createElement(WrappedComponent, this.addExtraProps(selector.props))
+                }
+            }
         }
+        return Connect
     }
+}
+
+let ReactRedux = {
+    connect
 }
