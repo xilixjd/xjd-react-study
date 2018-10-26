@@ -11,5 +11,6 @@
  */
 
 function connect(mapStateToProps, mapDispatchToProps, mergeProps, extraOptions) {
-    
+    // mapStateToProps, mapDispatchToProps, mergeProps 这三者都有可能是无或 function 或 object 这三种情况
+    // 
 }
