@@ -10,7 +10,321 @@
  * selector 还需要对 react 的 shouldComponentUpdate 等生命周期来进行重新封装，猜想是需要对被包裹的组件的生命周期进行应用
  */
 
-function connect(mapStateToProps, mapDispatchToProps, mergeProps, extraOptions) {
-    // mapStateToProps, mapDispatchToProps, mergeProps 这三者都有可能是无或 function 或 object 这三种情况
-    // 
+var hasOwn = Object.prototype.hasOwnProperty;
+
+function is(x, y) {
+    if (x === y) {
+        return x !== 0 || y !== 0 || 1 / x === 1 / y;
+    } else {
+        return x !== x && y !== y;
+    }
+}
+
+function shallowEqual(objA, objB) {
+    if (is(objA, objB)) return true;
+
+    if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+        return false;
+    }
+
+    var keysA = Object.keys(objA);
+    var keysB = Object.keys(objB);
+
+    if (keysA.length !== keysB.length) return false;
+
+    for (var i = 0; i < keysA.length; i++) {
+        if (!hasOwn.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+        return false;
+        }
+    }
+
+    return true;
+}
+
+function strictEqual(a, b) {
+    return a === b;
+}
+
+function getDependsOnOwnProps(mapToProps) {
+    return mapToProps.length !== 1
+}
+
+function wrapMapToPropsConstant(getConstant) {
+    return function initConstantSelector(dispatch, options) {
+        const constant = getConstant(dispatch, options)
+
+        function constantSelector() { return constant}
+        constantSelector.dependsOnOwnProps = true
+        return constantSelector
+    }
+}
+
+function wrapMapToPropsFunc(mapToProps) {
+    return function initProxySelecor() {
+        // 这里不考虑 mapStateToProps 或 mapDispatchToProps return 为 function 的情况
+        const proxy = function mapToPropsProxy(stateOrDispatch, ownProps) {
+            return proxy.dependsOnOwnProps
+                ? mapToProps(stateOrDispatch, ownProps)
+                : mapToProps(stateOrDispatch)
+        }
+        proxy.dependsOnOwnProps = getDependsOnOwnProps(mapToProps)
+
+        return proxy
+    }
+}
+
+function getInitMapStateToPropsWrap(mapStateToProp) {
+    return mapStateToProp ? wrapMapToPropsFunc(mapStateToProp) : wrapMapToPropsConstant(() => ({}))
+}
+
+function getInitMapDispatchToPropsWrap(mapDispatchToProps) {
+    // 这里不考虑 mapDispatchToProps 是 object 的情况
+    return mapDispatchToProps 
+            ? wrapMapToPropsFunc(mapDispatchToProps) 
+            : wrapMapToPropsConstant((dispatch) => ({ dispatch }))
+}
+
+function pureFinalPropsSelectorFactory(
+    mapStateToProps,
+    mapDispatchToProps,
+    mergeProps,
+    dispatch,
+    options
+) {
+    let hasRunAtLeastOnce = false
+    let state
+    let ownProps
+    let stateProps
+    let dispatchProps
+    let mergedProps
+
+    function handleFirstCall(firstState, firstOwnProps) {
+        state = firstState
+        ownProps = firstOwnProps
+        stateProps = mapStateToProps(state, ownProps)
+        dispatchProps = mapDispatchToProps(dispatch, ownProps)
+        mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
+        hasRunAtLeastOnce = true
+        return mergedProps
+    }
+
+    function handleSubsequentCalls(nextState, nextOwnProps) {
+        // nextState 是 redux 的全局 state
+        // 感觉做这些判断的唯一意义就是少调用一些 mapStateToProps？
+        // 所以也可以粗暴的直接全部 merge
+        const propsChanged = !shallowEqual(nextOwnProps, ownProps)
+        const stateChanged = !strictEqual(nextState, state)
+        state = nextState
+        ownProps = nextOwnProps
+        // props 改变了，说明依赖 ownProps 的方法全要改变
+        // state 改变了，说明一定要调用 mapStateToProps
+        if (propsChanged && stateChanged) return handleNewPropsAndNewState()
+        if (propsChanged) return handleNewProps()
+        if (stateChanged) return handleNewState()
+        return mergedProps
+    }
+
+    function handleNewPropsAndNewState() {
+        stateProps = mapStateToProps(state, ownProps)
+        if (mapDispatchToProps.dependsOnOwnProps) {
+            dispatchProps = mapDispatchToProps(dispatch, ownProps)
+        }
+        mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
+        return mergedProps
+    }
+
+    function handleNewProps() {
+        if (mapStateToProps.dependsOnOwnProps) {
+            stateProps = mapStateToProps(state, ownProps)
+        }
+        if (mapDispatchToProps.dependsOnOwnProps) {
+            dispatchProps = mapDispatchToProps(dispatch, ownProps)
+        }
+        mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
+        return mergedProps
+    }
+
+    function handleNewState() {
+        const nextStateProps = mapStateToProps(state, ownProps)
+        const statePropsChanged = !shallowEqual(nextStateProps, stateProps)
+        stateProps = nextStateProps
+        if (statePropsChanged) {
+            mergedProps = mergeProps(stateProps, dispatchProps, ownProps)
+        }
+        return mergedProps
+    }
+
+    return function pureFinalPropsSelector(nextState, nextOwnProps) {
+        return hasRunAtLeastOnce
+            ? handleSubsequentCalls(nextState, nextOwnProps)
+            : handleFirstCall(nextState, nextOwnProps)
+    }
+}
+
+function selectFactory(dispatch, {
+    initMapStateToPropsWrap,
+    initMapDispatchToPropsWrap,
+    initMergePropsWrap,
+    ...options
+}) {
+    const mapStateToProps = initMapStateToPropsWrap(dispatch)
+    const mapDispatchToProps = initMapDispatchToPropsWrap(dispatch)
+    const mergeProps = initMergePropsWrap(dispatch)
+
+    return pureFinalPropsSelectorFactory(
+        mapStateToProps,
+        mapDispatchToProps,
+        mergeProps,
+        dispatch,
+        options
+    )
+}
+
+function connect(mapStateToProps, mapDispatchToProps, mergeProps, extraOptions = {}) {
+    // mapStateToProps 或 mapDispatchToProps 的返回不能为 function
+    // 输入参数 mergeProps 不做处理
+    const initMapStateToPropsWrap = getInitMapStateToPropsWrap(mapStateToProps)
+    const initMapDispatchToPropsWrap = getInitMapDispatchToPropsWrap(mapDispatchToProps)
+    const initMergePropsWrap = function() {
+        return function defaultMergeProps(stateProps, dispatchProps, ownProps) {
+            return {
+                ...ownProps,
+                ...stateProps,
+                ...dispatchProps
+            }
+        }
+    }
+
+    return connectAdvanced(selectFactory, {
+        shouldHandleStateChanges: Boolean(mapStateToProps),
+        initMapStateToPropsWrap,
+        initMapDispatchToPropsWrap,
+        initMergePropsWrap,
+        ...extraOptions
+    })
+}
+
+function makeSelectorStateful(sourceSelector, store) {
+    const selector = {
+        run: function runComponentSelector(props) {
+            try {
+                const nextProps = sourceSelector(store.getState(), props)
+                if (nextProps !== selector.props || selector.error) {
+                    selector.shouldComponentUpdate = true
+                    selector.props = nextProps
+                    selector.error = null
+                }
+            } catch (error) {
+                selector.shouldComponentUpdate = true
+                selector.error = error
+            }
+        }
+    }
+    return selector
+}
+
+function connectAdvanced(
+    selectFactory,
+    {
+        // 相当于默认参数，没有才是 true
+        shouldHandleStateChanges = true,
+        withRef = false,
+        ...connectOptions
+    } = {}
+) {
+    // 需引入 PropTypes
+    // const contextTypes = {
+    //     store: PropTypes.Object
+    // }
+    return function wrapWthConnect(WrappedComponent) {
+        const selectFactoryOptions = {
+            shouldHandleStateChanges,
+            withRef,
+            WrappedComponent,
+            ...connectOptions
+        }
+
+        class Connect extends Component {
+            constructor(props, context) {
+                super(props, context)
+                this.state = {}
+                // 由 Provider 组件传来
+                this.store = context["store"]
+                this.subscription = null
+
+                // react-redux 用 selector 来保存 props 和触发 mapStateToProps，
+                // 用 class Subscription 来 subscribe onChange 事件
+                // 我觉得没有必要用 class Subscripiton
+                this.initSelector()
+                // this.initSubscription()
+                this.trySubscribe()
+            }
+            componentDidMount() {
+                if (!shouldHandleStateChanges) return
+                // this.subscription.trySubscribe()
+                // 这里 run 一下的意义是 ???
+                // 因为第一次 initSelector 时已调用，则 selector.props 一定等于 nextProps
+                // 那么 this.selector.shouldComponentUpdate 就不会为 true
+                // 那 this.forceUpdate() 也就不会被调用，而且我这边 React 也确实没实现
+                this.selector.run(this.props)
+                if (this.selector.shouldComponentUpdate) this.forceUpdate()
+            }
+            componentWillReceiveProps(nextProps) {
+                // 基本进不来这个生命周期？
+                this.selector.run(nextProps)
+            }
+            shouldComponentUpdate() {
+                return this.selector.shouldComponentUpdate
+            }
+
+            getWrappedInstance() {
+                return this.wrappedInstance
+            }
+            setWrappedInstance(ref) {
+                this.wrappedInstance = ref
+            }
+
+            initSelector() {
+                const sourceSelector = selectFactory(this.store.dispatch, selectFactoryOptions)
+                this.selector = makeSelectorStateful(sourceSelector, this.store)
+                this.selector.run(this.props)
+            }
+            trySubscribe() {
+                this.subscription = this.store.subscribe(this.onStateChange.bind(this))
+            }
+            onStateChange() {
+                this.selector.run(this.props)
+                if (this.selector.shouldComponentUpdate) {
+                    this.setState({})
+                }
+            }
+
+            addExtraProps(props) {
+                if (withRef) {
+                    return {
+                        ...props,
+                        ref: this.setWrappedInstance
+                    }
+                } else {
+                    return props
+                }
+            }
+
+            render() {
+                const selector = this.selector
+                selector.shouldComponentUpdate = false
+
+                if (selector.error) {
+                    throw selector.error
+                } else {
+                    return React.createElement(WrappedComponent, this.addExtraProps(selector.props))
+                }
+            }
+        }
+        return Connect
+    }
+}
+
+let ReactRedux = {
+    connect
 }

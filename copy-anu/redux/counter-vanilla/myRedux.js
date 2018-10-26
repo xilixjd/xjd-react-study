@@ -103,7 +103,7 @@ let Redux = (function() {
         let finalReducersKeys = Object.keys(finalReducers)
 
         return function combination(state = {}, action) {
-            // let hasChanged = false
+            let hasChanged = false
             let nextState = {}
             for (let i = 0; i < finalReducersKeys.length; i++) {
                 let key = finalReducersKeys[i]
@@ -113,10 +113,13 @@ let Redux = (function() {
                 nextState[key] = nextStateForKey
                 // 这里我觉得没必要判断，因为 nextStateForKey 为对象的话必然是不相等
                 // 就算是相等的，那比较一下又有什么意义呢
-                // hasChanged = hasChanged || nextStateForKey !== previousStateForKey
+                // 看 react-redux 了解到一个意义是，判断 stateChanged，state 与 nextState 是否
+                // 改变，若改变，则将重新调用 mapStateToProps，若只 return nextState，则将一直
+                // 调用 mapStateToProps
+                hasChanged = hasChanged || nextStateForKey !== previousStateForKey
             }
-            // return hasChanged ? nextState : state
-            return nextState
+            return hasChanged ? nextState : state
+            // return nextState
         }
     }
 
