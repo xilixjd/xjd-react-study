@@ -28,6 +28,15 @@
                 value: '',
             }
         }
+        static abc = 2
+
+        componentWillMount() {
+            let { dispatch } = this.props
+            dispatch(addTodo({
+                type: 'ADD_TODO',
+                text: "init"
+            }))
+        }
 
         changeValue(e) {
             this.setState({

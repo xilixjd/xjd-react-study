@@ -1199,7 +1199,6 @@ selectorFactory) {
       wrappedComponentName: wrappedComponentName,
       WrappedComponent: WrappedComponent
     });
-    debugger
 
     var Connect = function (_Component) {
       inherits(Connect, _Component);
@@ -1218,7 +1217,6 @@ selectorFactory) {
 
         invariant_1$2(_this.store, 'Could not find "' + storeKey + '" in either the context or props of ' + ('"' + displayName + '". Either wrap the root component in a <Provider>, ') + ('or explicitly pass "' + storeKey + '" as a prop to "' + displayName + '".'));
         
-        debugger
         _this.initSelector();
         _this.initSubscription();
         return _this;
@@ -1277,6 +1275,7 @@ selectorFactory) {
       };
 
       Connect.prototype.setWrappedInstance = function setWrappedInstance(ref) {
+        debugger
         this.wrappedInstance = ref;
       };
 
@@ -1956,7 +1955,6 @@ function createConnect() {
         areMergedPropsEqual = _ref2$areMergedPropsE === undefined ? shallowEqual : _ref2$areMergedPropsE,
         extraOptions = objectWithoutProperties(_ref2, ['pure', 'areStatesEqual', 'areOwnPropsEqual', 'areStatePropsEqual', 'areMergedPropsEqual']);
     
-    debugger
     var initMapStateToProps = match(mapStateToProps, mapStateToPropsFactories, 'mapStateToProps');
     var initMapDispatchToProps = match(mapDispatchToProps, mapDispatchToPropsFactories, 'mapDispatchToProps');
     var initMergeProps = match(mergeProps, mergePropsFactories, 'mergeProps');
