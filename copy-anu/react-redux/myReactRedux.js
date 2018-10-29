@@ -45,6 +45,39 @@ function strictEqual(a, b) {
     return a === b;
 }
 
+const REACT_STATICS = {
+    childContextTypes: true,
+    contextTypes: true,
+    defaultProps: true,
+    displayName: true,
+    getDefaultProps: true,
+    mixins: true,
+    propTypes: true,
+    type: true
+}
+
+const KNOWN_STATICS = {
+  name: true,
+  length: true,
+  prototype: true,
+  caller: true,
+  callee: true,
+  arguments: true,
+  arity: true
+}
+
+// 用来给 targetComponent 添加上 sourceComponent 的一些静态（static）属性（方法）
+function hoistNonReactStatics(targetComponent, sourceComponent) {
+    const keys = Object.getOwnPropertyNames(sourceComponent)
+    for (let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        if (!REACT_STATICS[key] && !KNOWN_STATICS[key]) {
+            targetComponent[key] = sourceComponent[key]
+        }
+    }
+    return targetComponent
+}
+
 function getDependsOnOwnProps(mapToProps) {
     return mapToProps.length !== 1
 }
@@ -251,6 +284,7 @@ function connectAdvanced(
                 // 由 Provider 组件传来
                 this.store = context["store"]
                 this.subscription = null
+                this.setWrappedInstance = this.setWrappedInstance.bind(this)
 
                 // react-redux 用 selector 来保存 props 和触发 mapStateToProps，
                 // 用 class Subscription 来 subscribe onChange 事件
@@ -262,10 +296,14 @@ function connectAdvanced(
             componentDidMount() {
                 if (!shouldHandleStateChanges) return
                 // this.subscription.trySubscribe()
+
                 // 这里 run 一下的意义是 ???
                 // 因为第一次 initSelector 时已调用，则 selector.props 一定等于 nextProps
                 // 那么 this.selector.shouldComponentUpdate 就不会为 true
                 // 那 this.forceUpdate() 也就不会被调用，而且我这边 React 也确实没实现
+                // 官方解释是说 To handle the case where a child component may have triggered 
+                // a state change by dispatching an action in its componentWillMount, 
+                // we have to re-run the select and maybe re-render.
                 this.selector.run(this.props)
                 if (this.selector.shouldComponentUpdate) this.forceUpdate()
             }
@@ -321,10 +359,27 @@ function connectAdvanced(
                 }
             }
         }
-        return Connect
+        return hoistNonReactStatics(Connect, WrappedComponent)
+    }
+}
+
+class Provider extends Component {
+    constructor(props, context) {
+        super(props, context)
+        this.store = props.store
+    }
+    getChildContext() {
+        return {
+            store: this.store
+        }
+    }
+
+    render() {
+        return React.Children.only(this.props.children)
     }
 }
 
 let ReactRedux = {
-    connect
+    connect,
+    Provider,
 }

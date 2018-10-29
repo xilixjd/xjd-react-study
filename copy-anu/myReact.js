@@ -44,6 +44,38 @@ Component.prototype = {
     render: function render() {}
 }
 
+// class Component {
+//     constructor(props, context) {
+//         CurrentOwner.cur = this
+//         this.context = context;
+//         this.props = props;
+//         this.refs = {};
+//         this.state = null
+//         this.__pendingCallbacks = [];
+//         this.__pendingStates = [];
+//         this.__current = {}
+//     }
+
+//     setState(state, cb) {
+//         setStateImpl.call(this, state, cb)
+//     }
+//     __mergeStates(nextProps, nextContext) {
+//         let length = this.__pendingStates.length
+//         if (length === 0) {
+//             return this.state
+//         }
+//         let states = clearArray(this.__pendingStates)
+//         let nextStates = Object.assign({}, this.state)
+//         for (var i = 0; i < length; i++) {
+//             var state = states[i]
+//             var nextState = typeNumber(state) === 5 ? state.call(this, nextStates, nextProps, nextContext) : state
+//             Object.assign(nextStates, nextState)
+//         }
+//         return nextStates
+//     }
+//     render() {}
+// }
+
 function setStateImpl(state, cb) {
     if (typeNumber(cb) === 5) {
         this.__pendingCallbacks.push(cb)
