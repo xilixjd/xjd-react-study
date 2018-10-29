@@ -30,11 +30,11 @@
         }
         static abc = 2
 
-        componentWillMount() {
+        componentDidMount() {
             let { dispatch } = this.props
             dispatch(addTodo({
                 type: 'ADD_TODO',
-                text: "init"
+                text: "init2"
             }))
         }
 
@@ -89,6 +89,13 @@
     AddTodo = ReactRedux.connect()(AddTodo)
 
     class TodoList extends React.Component {
+        componentWillMount() {
+            let { dispatch } = this.props
+            dispatch(addTodo({
+                type: 'ADD_TODO',
+                text: "init1"
+            }))
+        }
         render() {
             let todos = this.props.todos
             return (
