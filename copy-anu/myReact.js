@@ -104,6 +104,7 @@ function setStateImpl(state, cb) {
         }
         if (this.__mounting) {
             // 在componentDidMount里调用自己的setState，延迟到下一周期更新
+            // 合并在 componentDidMount 中重复调用的 setState
             // ??? 在更新过程中， 子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
             return;
         }
