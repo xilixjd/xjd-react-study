@@ -277,7 +277,7 @@ function connectAdvanced(
             ...connectOptions
         }
 
-        class Connect extends Component {
+        class Connect extends React.Component {
             constructor(props, context) {
                 super(props, context)
                 this.state = {}
@@ -294,6 +294,7 @@ function connectAdvanced(
                 this.trySubscribe()
             }
             componentDidMount() {
+                return
                 if (!shouldHandleStateChanges) return
                 // this.subscription.trySubscribe()
 
@@ -363,7 +364,7 @@ function connectAdvanced(
     }
 }
 
-class Provider extends Component {
+class Provider extends React.Component {
     constructor(props, context) {
         super(props, context)
         this.store = props.store

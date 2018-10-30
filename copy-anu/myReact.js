@@ -27,6 +27,9 @@ Component.prototype = {
     setState: function setState(state, cb) {
         setStateImpl.call(this, state, cb)
     },
+    forceUpdate: function forceUpdate(cb) {
+        setStateImpl.call(this, true, cb)
+    },
     __mergeStates: function __mergeStates(nextProps, nextContext) {
         let length = this.__pendingStates.length
         if (length === 0) {
@@ -80,7 +83,11 @@ function setStateImpl(state, cb) {
     if (typeNumber(cb) === 5) {
         this.__pendingCallbacks.push(cb)
     }
-    this.__pendingStates.push(state)
+    if (state === true) {
+        this.__forceUpdate = true
+    } else {
+        this.__pendingStates.push(state)
+    }
 
     let hasDom = this.__current._hostNode
     if (!hasDom) {
@@ -753,10 +760,12 @@ function _refreshComponent(instance, dom, mountQueue) {
     instance.props = lastProps
 
     instance.__renderInNext = null
-    if (instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+    if (!instance.__forceUpdate && instance.shouldComponentUpdate && instance.shouldComponentUpdate(nextProps, nextState, nextContext) === false) {
+        instance.__forceUpdate = false
         return dom
     }
     instance.__mounting = true
+    instance.__forceUpdate = false
     if (instance.componentWillUpdate) {
         instance.componentWillUpdate(nextProps, nextState, nextContext)
     }
@@ -1018,7 +1027,7 @@ function disposeComponent(vnode) {
             dom.__current = null
         }
         vnode.ref && vnode.ref(null)
-        instance.setState = nullFunc
+        instance.setState = instance.forceUpdate = nullFunc
         vnode._instance = instance.__current = instance.__renderInNext = null
         disposeVnode(vnode._renderedVnode)
     }
