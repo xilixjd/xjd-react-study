@@ -283,7 +283,7 @@ function connectAdvanced(
                 this.state = {}
                 // 由 Provider 组件传来
                 this.store = context["store"]
-                this.subscription = null
+                this.unsubscribe = null
                 this.setWrappedInstance = this.setWrappedInstance.bind(this)
 
                 // react-redux 用 selector 来保存 props 和触发 mapStateToProps，
@@ -315,6 +315,13 @@ function connectAdvanced(
             shouldComponentUpdate() {
                 return this.selector.shouldComponentUpdate
             }
+            componentWillUnmount() {
+                this.unsubscribe()
+                this.unsubscribe = null
+                this.selector.run = null
+                this.selector = null
+                this.store = null
+            }
 
             getWrappedInstance() {
                 return this.wrappedInstance
@@ -329,7 +336,7 @@ function connectAdvanced(
                 this.selector.run(this.props)
             }
             trySubscribe() {
-                this.subscription = this.store.subscribe(this.onStateChange.bind(this))
+                this.unsubscribe = this.store.subscribe(this.onStateChange.bind(this))
             }
             onStateChange() {
                 this.selector.run(this.props)
