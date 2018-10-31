@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+        .aaa {
+            width: 200px;
+            height: 200px;
+            background: red;
+        }
+       .bbb {
+            width: 200px;
+            height: 200px;
+            background: lawngreen;
+        }
+    </style>
+<!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
+<!--<script type='text/javascript' src="./dist/devtools.js"></script>-->
+
+<script src="./myReact.js"></script>
+ <!-- <script src="./dist/react-dom.js"></script> -->
+
+   <!--  <script src="./test/redux.js"></script>
+    <script src="./test/react-redux.js"></script>-->
+    <script src="./babel.js"></script>
+    <script type='text/babel'>
+        class Login extends Component {
+            render() {
+                return (
+                    <div>
+                        <div>
+                            <label id="username">
+                                账户
+                            </label>
+                            <input name="username" {...this.props.getField('username')}/>
+                        </div>
+                        <div>
+                            <label id="password">
+                                密码
+                            </label>
+                            <input name="password" {...this.props.getField('password')}/>
+                        </div>
+                        <div onClick={this.props.handleSubmit}>提交</div>
+                        <div>other content</div>
+                    </div>
+                )
+            }
+        }
+
+        const formCreate = WrappedComponent => class extends Component {
+
+            constructor() {
+                super();
+                this.state = {
+                    fields: {},
+                }
+            }
+            onChange = key => e => {
+                const { fields } = this.state;
+                fields[key] = e.target.value;
+                this.setState({
+                    fields,
+                })
+            }
+            handleSubmit = () => {
+                let fields = this.state.fields
+                let s = ""
+                for (let k in fields) {
+                    s += k + ':' + fields[k] + ','
+                }
+                alert(s);
+            }
+            getField = fieldName => {
+                return {
+                    onChange: this.onChange(fieldName),
+                }
+            }
+            render() {
+                const props = {
+                    ...this.props,
+                    handleSubmit: this.handleSubmit,
+                    getField: this.getField,
+                }
+                return (
+                    <WrappedComponent
+                        {...props}
+                    />
+                );
+            }
+        };
+        Login = formCreate(Login)
+
+var s 
+window.onload = function(){
+   s = ReactDOM.render( <Login/>, document.getElementById('example'))
+}
+var input = document.querySelector("#inputChange")
+input.oninput = function(e) {
+    console.log(e.target.value)
+}
+    </script>
+
+</head>
+
+<body>
+
+    <div>开发者工具</div>
+    <div id='example'></div>
+    <input id="inputChange">
+<!-- <select disabled value='aaa' multiple>
+    <option>sss</option>
+      <option>aaa</option>
+        <option>bbb</option>
+          <option>ccc</option>
+</select> -->
+
+</body>
+
+</html>
