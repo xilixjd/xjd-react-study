@@ -382,6 +382,13 @@ function typeNumber(data) {
 function clearArray(arr) {
     return arr.splice(0, arr.length)
 }
+
+function checkRenderNull(vnode, type) {
+    if (vnode === null || vnode === false) {
+        return { type: "#comment", text: "empty", vtype: 0 }
+    }
+    return vnode
+}
 /* ==========================================/util========================================== */
 
 /* ==========================================event========================================== */
@@ -676,6 +683,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     }
 
     // dom element vnode
+    // debugger
     let rendered = renderComponent.call(instance, vnode, props, context)
     instance.__mounting = true
     let childContext = rendered.vtype ? getChildContext(instance, context) : context;
@@ -696,6 +704,7 @@ function renderComponent(vnode, props, context) {
     let lastOwn = CurrentOwner.cur
     CurrentOwner.cur = this
     let rendered = this.__StatelessRender ? this.__StatelessRender(props, context) : this.render()
+    rendered = checkRenderNull(rendered, vnode.type)
     CurrentOwner.cur = lastOwn
     this.context = context
     this.props = props
