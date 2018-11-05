@@ -342,15 +342,15 @@ function objectCompare(obj1, obj2) {
         obj1Stringfy = JSON.stringify(obj1)
     } catch (e) {
         console.log("第一个参数不是对象")
-        return false
+        return true
     }
     try {
         obj2Stringfy = JSON.stringify(obj2)
     } catch (e) {
         console.log("第二个参数不是对象")
-        return false
+        return true
     }
-    return obj1Stringfy === obj2Stringfy
+    return obj1Stringfy !== obj2Stringfy
 }
 
 let numberMap = {
@@ -388,6 +388,19 @@ function checkRenderNull(vnode, type) {
         return { type: "#comment", text: "empty", vtype: 0 }
     }
     return vnode
+}
+
+/**
+ * 是空对象，返回 0，不是，返回 1
+ * @param {对象} obj 
+ */
+function isEmpty(obj) {
+    for (var i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            return 1;
+        }
+    }
+    return 0;
 }
 /* ==========================================/util========================================== */
 
@@ -795,8 +808,15 @@ function _refreshComponent(instance, dom, mountQueue) {
 
     let prevChildContext = instance.__childContext
     instance.__childContext = childContext
-    contextHasChange = Object.keys(prevChildContext).length === 0 +
-        Object.keys(childContext).length === 0 && objectCompare(prevChildContext, childContext)
+    // let a = Object.keys(prevChildContext).length !== 0
+    // let b = Object.keys(childContext).length !== 0
+    // 是空对象返回 0
+    let a = isEmpty(prevChildContext)
+    let b = isEmpty(childContext)
+    // 不等于为 true
+    let c = objectCompare(prevChildContext, childContext)
+    // 如果两个context都为空对象，就不比较引用，认为它们没有变
+    contextHasChange = a + b && c
 
     dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue)
 

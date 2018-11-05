@@ -3361,6 +3361,7 @@ var Route$1 = function (_React$Component) {
     var route = router.route;
 
     var pathname = (location || route.location).pathname;
+    debugger
 
     return matchPath(pathname, { path: path, strict: strict, exact: exact, sensitive: sensitive }, route.match);
   };

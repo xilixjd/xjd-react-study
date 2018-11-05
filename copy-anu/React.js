@@ -2136,8 +2136,11 @@ function _refreshComponent(instance, dom, mountQueue) {
 
     var prevChildContext = instance.__childContext;
     instance.__childContext = childContext;
+    var a = isEmpty(prevChildContext)
+    var b = isEmpty(childContext)
+    var c = prevChildContext !== childContext
     //如果两个context都为空对象，就不比较引用，认为它们没有变
-    contextHasChange = isEmpty(prevChildContext) + isEmpty(childContext) && prevChildContext !== childContext;
+    contextHasChange = a + b && c;
 
     dom = alignVnode(lastRendered, rendered, dom, childContext, mountQueue);
 
