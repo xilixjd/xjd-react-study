@@ -296,6 +296,29 @@ function flattenVChildrenToVnode(vnode) {
     }
     return vnode.vchildren = arr;
 }
+
+function cloneElement(vnode, props) {
+    if (Array.isArray(vnode)) {
+        vnode = vnode[0];
+    }
+    if (!vnode.vtype) {
+        return Object.assign({}, vnode);
+    }
+    var configs = {
+        key: vnode.key,
+        ref: vnode.ref
+    };
+    var owner = vnode._owner;
+    var lastOwn = CurrentOwner.cur;
+    if (props && props.ref) {
+        owner = lastOwn;
+    }
+    Object.assign(configs, vnode.props, props);
+    CurrentOwner.cur = owner;
+    var ret = createElement(vnode.type, configs, arguments.length > 2 ? [].slice.call(arguments, 2) : configs.children);
+    CurrentOwner.cur = lastOwn;
+    return ret;
+}
 /* ==========================================/createElement========================================== */
 
 
@@ -1114,7 +1137,7 @@ function clearRefsAndMounts(queue) {
     queue.length = 0
 }
 
-// 为 react-redux 服务
+// 为 react-redux, react-router 服务
 var Children = {
     only: function only(children) {
         //only方法接受的参数只能是一个对象，不能是多个对象（数组）。
@@ -1144,6 +1167,7 @@ let React = {
     options: options,
     Component: Component,
     createElement: createElement,
+    cloneElement: cloneElement,
     Children: Children
 }
 

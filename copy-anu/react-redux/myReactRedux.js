@@ -7,7 +7,7 @@
  * 包含了 mapStateToProps, mapDispatchToProps, mergeProps, dispatch, options 这些参数，用来根据 connect 函数
  * 传递的参数，来提供合适的 mapStateToProps 等的方法，如有时没有 mapStateToProps，有时用户将 pure 设为 false（默认为 true）。
  * 此外 selector 还会缓存经过 mapStateToProps 和 mapDispatchToProps 计算后组件的 props，selector.props = nextProps。
- * selector 还需要对 react 的 shouldComponentUpdate 等生命周期来进行重新封装，猜想是需要对被包裹的组件的生命周期进行应用
+ * 
  */
 
 var hasOwn = Object.prototype.hasOwnProperty;
@@ -302,6 +302,7 @@ function connectAdvanced(
                 // 因为第一次 initSelector 时已调用，则 selector.props 一定等于 nextProps
                 // 那么 this.selector.shouldComponentUpdate 就不会为 true
                 // 那 this.forceUpdate() 也就不会被调用，而且我这边 React 也确实没实现
+                // 没有复现到这个场景
                 // 官方解释是说 To handle the case where a child component may have triggered 
                 // a state change by dispatching an action in its componentWillMount, 
                 // we have to re-run the select and maybe re-render.
