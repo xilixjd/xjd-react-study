@@ -28,9 +28,15 @@
     class Router extends React.Component {
         constructor(props) {
             super(props)
+            const history = props.history
             this.state = {
-                match: this.computeMatch(props.history.location.pathname)
+                match: this.computeMatch(history.location.pathname)
             }
+            this.unlisten = history.listen(() => {
+                this.setState({
+                    match: this.computeMatch(history.location.pathname)
+                })
+            })
         }
 
         getChildContext() {
@@ -56,12 +62,8 @@
         }
 
         componentWillMount() {
-            const { history } = this.props
-            this.unlisten = history.listen(() => {
-                this.setState({
-                    match: this.computeMatch(history.location.pathname)
-                })
-            })
+            // const { history } = this.props
+            
         }
 
         componentWillReceiveProps(nextProps) {
@@ -102,9 +104,9 @@
 
     class Route extends React.Component {
         constructor(props, context) {
-            super(props)
+            super(props, context)
             this.state = {
-                match: this.computeMatch(this.props, context.router)
+                match: this.computeMatch(props, context.router)
             }
         }
 
@@ -122,7 +124,7 @@
 
         /**
          * props => computedMatch, location, path, strict, exact, sensitive
-         * @param {*props} param0 
+         * @param {*props} props{} 
          * @param {*context.router} router 
          */
         computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
@@ -137,8 +139,9 @@
         }
 
         componentWillReceiveProps(nextProps, nextContext) {
+            const match = this.computeMatch(nextProps, nextContext.router)
             this.setState({
-                match: this.computeMatch(nextProps, nextContext.router)
+                match
             })
         }
 
@@ -182,7 +185,8 @@
                 this.props.onClick(event)
 
             if (
-                !event.defaultPrevented && // onClick prevented default
+                // 看是否有调用 e.preventDefault() preventDefault的作用为取消该事件
+                !event.defaultPrevented && // onClick prevented default 
                 event.button === 0 && // ignore right clicks
                 !this.props.target && // let browser handle "target=_blank" etc.
                 !isModifiedEvent(event) // ignore clicks with modifier keys
@@ -241,7 +245,7 @@
         );
     }
     
-    function Home() {
+    function Home(p) {
         return (
         <div>
             <h2>Home</h2>
@@ -249,7 +253,7 @@
         );
     }
     
-    function About() {
+    function About(p) {
         return (
         <div>
             <h2>About</h2>
