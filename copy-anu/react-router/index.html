@@ -19,17 +19,202 @@
 <script src="../babel.js"></script>
 <script src="./history.js"></script>
 <script src="./myReactRouterDom.js"></script>
+<!-- <script src="./myReactRouterDom2.js"></script> -->
 <!-- <script src="./react-router-dom.js"></script> -->
 <!-- <script src="../redux/counter-vanilla/myRedux.js"></script> -->
 <!-- <script src="./react-redux.js"></script> -->
 <!-- <script src="./myReactRedux.js"></script> -->
 <script type='text/babel'>
-    debugger
+    class Router extends React.Component {
+        constructor(props) {
+            super(props)
+            this.state = {
+                match: this.computeMatch(props.history.location.pathname)
+            }
+        }
+
+        getChildContext() {
+            return {
+                router: {
+                    ...this.context.router,
+                    history: this.props.history,
+                    route: {
+                        location: this.props.history.location,
+                        match: this.state.match,
+                    }
+                }
+            }
+        }
+
+        computeMatch(pathname) {
+            return {
+                path: '/',
+                url: '/',
+                params: {},
+                isExact: pathname === "/",
+            }
+        }
+
+        componentWillMount() {
+            const { history } = this.props
+            this.unlisten = history.listen(() => {
+                this.setState({
+                    match: this.computeMatch(history.location.pathname)
+                })
+            })
+        }
+
+        componentWillReceiveProps(nextProps) {
+
+        }
+
+        componentWillUnmount() {
+            this.unlisten()
+        }
+
+        render() {
+            const { children } = this.props
+            return children ? React.Children.only(children) : null
+        }
+    }
+
+    class BrowserRouter extends React.Component {
+        constructor(props) {
+            super(props)
+            this.history = History.createBrowserHistory(props)
+        }
+
+        render() {
+            return <Router history={this.history} children={this.props.children} />
+        }
+    }
+
+    class HashRouter extends React.Component {
+        constructor(props) {
+            super(props)
+            this.history = History.createHashHistory(props)
+        }
+
+        render() {
+            return <Router history={this.history} children={this.props.children} />
+        }
+    }
+
+    class Route extends React.Component {
+        constructor(props, context) {
+            super(props)
+            this.state = {
+                match: this.computeMatch(this.props, context.router)
+            }
+        }
+
+        getChildContext() {
+            return {
+                router: {
+                    ...this.context.router,
+                    route: {
+                        location: this.props.location || this.context.router.route.location,
+                        match: this.state.match
+                    }
+                }
+            }
+        }
+
+        /**
+         * props => computedMatch, location, path, strict, exact, sensitive
+         * @param {*props} param0 
+         * @param {*context.router} router 
+         */
+        computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
+            // for Switch
+            if (computedMatch) {
+                return computedMatch
+            }
+
+            const { route } = router
+            const pathname = (location || route.location).pathname
+            return path ? matchPath(pathname, { path, strict, exact, sensitive }) : route.match
+        }
+
+        componentWillReceiveProps(nextProps, nextContext) {
+            this.setState({
+                match: this.computeMatch(nextProps, nextContext.router)
+            })
+        }
+
+        render() {
+            const { match } = this.state
+            const { children, component, render } = this.props
+            const { history, route, staticContext } = this.context.router
+            const location = this.props.location || route.location
+            const props = { match, location, history, staticContext }
+
+            return (
+                component ? ( // component prop gets first priority, only called if there's a match
+                    match ? React.createElement(component, props) : null
+                ) : render ? ( // render prop is next, only called if there's a match
+                    match ? render(props) : null
+                ) : children ? ( // children come last, always called
+                    typeof children === 'function' ? (
+                        children(props)
+                    ) : !isEmptyChildren(children) ? (
+                        React.Children.only(children)
+                    ) : (
+                            null
+                        )
+                ) : (
+                        null
+                    )
+            )
+        }
+    }
+
+    const isModifiedEvent = (event) =>
+        !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+
+    class Link extends React.Component {
+        constructor(props, context) {
+            super(props)
+            this.handleClick = this.handleClick.bind(this)
+        }
+        handleClick(event) {
+            if (this.props.onClick)
+                this.props.onClick(event)
+
+            if (
+                !event.defaultPrevented && // onClick prevented default
+                event.button === 0 && // ignore right clicks
+                !this.props.target && // let browser handle "target=_blank" etc.
+                !isModifiedEvent(event) // ignore clicks with modifier keys
+            ) {
+                event.preventDefault()
+
+                const { history } = this.context.router
+                const { replace, to } = this.props
+
+                if (replace) {
+                    history.replace(to)
+                } else {
+                    history.push(to)
+                }
+            }
+        }
+
+        render() {
+            const { replace, to, innerRef, ...props } = this.props // eslint-disable-line no-unused-vars
+            const href = this.context.router.history.createHref(
+                typeof to === 'string' ? { pathname: to } : to
+            )
+
+            return <a {...props} onClick={this.handleClick} href={href} ref={innerRef} />
+        }
+    }
+
     // let Router = ReactRouterDOM.Router
-    let Link = ReactRouterDOM.Link
-    let Route = ReactRouterDOM.Route
-    let BrowserRouter = ReactRouterDOM.BrowserRouter
-    let HashRouter = ReactRouterDOM.HashRouter
+    // let Link = ReactRouterDOM.Link
+    // let Route = ReactRouterDOM.Route
+    // let BrowserRouter = ReactRouterDOM.BrowserRouter
+    // let HashRouter = ReactRouterDOM.HashRouter
     function BasicExample() {
         return (
         <HashRouter>

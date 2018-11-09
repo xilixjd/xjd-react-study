@@ -710,8 +710,14 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     let type = vnode.type,
         ref = vnode.ref,
         props = vnode.props
+    var lastOwn = CurrentOwner.cur
     let instance = new type(props, context)
+    CurrentOwner.cur = lastOwn
     vnode._instance = instance
+
+    // 需要对未调用 super(props, context) 的组件进行重新赋值
+    instance.context = instance.context || context
+    instance.props = instance.props || props
 
     if (instance.componentWillMount) {
         instance.componentWillMount()
@@ -719,7 +725,6 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
     }
 
     // dom element vnode
-    // debugger
     let rendered = renderComponent.call(instance, vnode, props, context)
     instance.__mounting = true
     let childContext = rendered.vtype ? getChildContext(instance, context) : context;
@@ -739,6 +744,9 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 function renderComponent(vnode, props, context) {
     let lastOwn = CurrentOwner.cur
     CurrentOwner.cur = this
+    // 这里是 anu 的一个 bug，因为原本是在 render 之后的，如果在 render 之后
+    // 那么组件的 render 函数中，this.context 取不到最新的 context
+    
     let rendered = this.__StatelessRender ? this.__StatelessRender(props, context) : this.render()
     rendered = checkRenderNull(rendered, vnode.type)
     CurrentOwner.cur = lastOwn

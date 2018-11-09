@@ -3093,6 +3093,7 @@ var Link = function (_React$Component) {
         props = objectWithoutProperties(_props, ['replace', 'to', 'innerRef']); // eslint-disable-line no-unused-vars
 
     invariant_1$2(this.context.router, 'You should not use <Link> outside a <Router>');
+    debugger
 
     var href = this.context.router.history.createHref(typeof to === 'string' ? { pathname: to } : to);
 

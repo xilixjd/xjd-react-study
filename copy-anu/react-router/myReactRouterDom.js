@@ -1059,8 +1059,6 @@
 // })));
 
 /*=============================================================/History=============================================*/
-debugger
-let ReactRouterDOM = (function() {
 var DEFAULT_DELIMITER = '/'
 var DEFAULT_DELIMITERS = './'
 
@@ -1070,15 +1068,15 @@ var DEFAULT_DELIMITERS = './'
  * @type {RegExp}
  */
 var PATH_REGEXP = new RegExp([
-  // Match escaped characters that would otherwise appear in future matches.
-  // This allows the user to escape special characters that won't transform.
-  '(\\\\.)',
-  // Match Express-style parameters and un-named parameters with a prefix
-  // and optional suffixes. Matches appear as:
-  //
-  // ":test(\\d+)?" => ["test", "\d+", undefined, "?"]
-  // "(\\d+)"  => [undefined, undefined, "\d+", undefined]
-  '(?:\\:(\\w+)(?:\\(((?:\\\\.|[^\\\\()])+)\\))?|\\(((?:\\\\.|[^\\\\()])+)\\))([+*?])?'
+    // Match escaped characters that would otherwise appear in future matches.
+    // This allows the user to escape special characters that won't transform.
+    '(\\\\.)',
+    // Match Express-style parameters and un-named parameters with a prefix
+    // and optional suffixes. Matches appear as:
+    //
+    // ":test(\\d+)?" => ["test", "\d+", undefined, "?"]
+    // "(\\d+)"  => [undefined, undefined, "\d+", undefined]
+    '(?:\\:(\\w+)(?:\\(((?:\\\\.|[^\\\\()])+)\\))?|\\(((?:\\\\.|[^\\\\()])+)\\))([+*?])?'
 ].join('|'), 'g')
 
 /**
@@ -1088,76 +1086,76 @@ var PATH_REGEXP = new RegExp([
  * @param  {Object=} options
  * @return {!Array}
  */
-function parse (str, options) {
-  var tokens = []
-  var key = 0
-  var index = 0
-  var path = ''
-  var defaultDelimiter = (options && options.delimiter) || DEFAULT_DELIMITER
-  var delimiters = (options && options.delimiters) || DEFAULT_DELIMITERS
-  var pathEscaped = false
-  var res
+function parse(str, options) {
+    var tokens = []
+    var key = 0
+    var index = 0
+    var path = ''
+    var defaultDelimiter = (options && options.delimiter) || DEFAULT_DELIMITER
+    var delimiters = (options && options.delimiters) || DEFAULT_DELIMITERS
+    var pathEscaped = false
+    var res
 
-  while ((res = PATH_REGEXP.exec(str)) !== null) {
-    var m = res[0]
-    var escaped = res[1]
-    var offset = res.index
-    path += str.slice(index, offset)
-    index = offset + m.length
+    while ((res = PATH_REGEXP.exec(str)) !== null) {
+        var m = res[0]
+        var escaped = res[1]
+        var offset = res.index
+        path += str.slice(index, offset)
+        index = offset + m.length
 
-    // Ignore already escaped sequences.
-    if (escaped) {
-      path += escaped[1]
-      pathEscaped = true
-      continue
+        // Ignore already escaped sequences.
+        if (escaped) {
+            path += escaped[1]
+            pathEscaped = true
+            continue
+        }
+
+        var prev = ''
+        var next = str[index]
+        var name = res[2]
+        var capture = res[3]
+        var group = res[4]
+        var modifier = res[5]
+
+        if (!pathEscaped && path.length) {
+            var k = path.length - 1
+
+            if (delimiters.indexOf(path[k]) > -1) {
+                prev = path[k]
+                path = path.slice(0, k)
+            }
+        }
+
+        // Push the current path onto the tokens.
+        if (path) {
+            tokens.push(path)
+            path = ''
+            pathEscaped = false
+        }
+
+        var partial = prev !== '' && next !== undefined && next !== prev
+        var repeat = modifier === '+' || modifier === '*'
+        var optional = modifier === '?' || modifier === '*'
+        var delimiter = prev || defaultDelimiter
+        var pattern = capture || group
+
+        tokens.push({
+            name: name || key++,
+            prefix: prev,
+            delimiter: delimiter,
+            optional: optional,
+            repeat: repeat,
+            partial: partial,
+            pattern: pattern ? escapeGroup(pattern) : '[^' + escapeString(delimiter) + ']+?'
+        })
     }
 
-    var prev = ''
-    var next = str[index]
-    var name = res[2]
-    var capture = res[3]
-    var group = res[4]
-    var modifier = res[5]
-
-    if (!pathEscaped && path.length) {
-      var k = path.length - 1
-
-      if (delimiters.indexOf(path[k]) > -1) {
-        prev = path[k]
-        path = path.slice(0, k)
-      }
+    // Push any remaining characters.
+    if (path || index < str.length) {
+        tokens.push(path + str.substr(index))
     }
 
-    // Push the current path onto the tokens.
-    if (path) {
-      tokens.push(path)
-      path = ''
-      pathEscaped = false
-    }
-
-    var partial = prev !== '' && next !== undefined && next !== prev
-    var repeat = modifier === '+' || modifier === '*'
-    var optional = modifier === '?' || modifier === '*'
-    var delimiter = prev || defaultDelimiter
-    var pattern = capture || group
-
-    tokens.push({
-      name: name || key++,
-      prefix: prev,
-      delimiter: delimiter,
-      optional: optional,
-      repeat: repeat,
-      partial: partial,
-      pattern: pattern ? escapeGroup(pattern) : '[^' + escapeString(delimiter) + ']+?'
-    })
-  }
-
-  // Push any remaining characters.
-  if (path || index < str.length) {
-    tokens.push(path + str.substr(index))
-  }
-
-  return tokens
+    return tokens
 }
 
 /**
@@ -1167,86 +1165,86 @@ function parse (str, options) {
  * @param  {Object=}            options
  * @return {!function(Object=, Object=)}
  */
-function compile (str, options) {
-  return tokensToFunction(parse(str, options))
+function compile(str, options) {
+    return tokensToFunction(parse(str, options))
 }
 
 /**
  * Expose a method for transforming tokens into the path function.
  */
-function tokensToFunction (tokens) {
-  // Compile all the tokens into regexps.
-  var matches = new Array(tokens.length)
+function tokensToFunction(tokens) {
+    // Compile all the tokens into regexps.
+    var matches = new Array(tokens.length)
 
-  // Compile all the patterns before compilation.
-  for (var i = 0; i < tokens.length; i++) {
-    if (typeof tokens[i] === 'object') {
-      matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$')
-    }
-  }
-
-  return function (data, options) {
-    var path = ''
-    var encode = (options && options.encode) || encodeURIComponent
-
+    // Compile all the patterns before compilation.
     for (var i = 0; i < tokens.length; i++) {
-      var token = tokens[i]
-
-      if (typeof token === 'string') {
-        path += token
-        continue
-      }
-
-      var value = data ? data[token.name] : undefined
-      var segment
-
-      if (Array.isArray(value)) {
-        if (!token.repeat) {
-          throw new TypeError('Expected "' + token.name + '" to not repeat, but got array')
+        if (typeof tokens[i] === 'object') {
+            matches[i] = new RegExp('^(?:' + tokens[i].pattern + ')$')
         }
-
-        if (value.length === 0) {
-          if (token.optional) continue
-
-          throw new TypeError('Expected "' + token.name + '" to not be empty')
-        }
-
-        for (var j = 0; j < value.length; j++) {
-          segment = encode(value[j], token)
-
-          if (!matches[i].test(segment)) {
-            throw new TypeError('Expected all "' + token.name + '" to match "' + token.pattern + '"')
-          }
-
-          path += (j === 0 ? token.prefix : token.delimiter) + segment
-        }
-
-        continue
-      }
-
-      if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-        segment = encode(String(value), token)
-
-        if (!matches[i].test(segment)) {
-          throw new TypeError('Expected "' + token.name + '" to match "' + token.pattern + '", but got "' + segment + '"')
-        }
-
-        path += token.prefix + segment
-        continue
-      }
-
-      if (token.optional) {
-        // Prepend partial segment prefixes.
-        if (token.partial) path += token.prefix
-
-        continue
-      }
-
-      throw new TypeError('Expected "' + token.name + '" to be ' + (token.repeat ? 'an array' : 'a string'))
     }
 
-    return path
-  }
+    return function (data, options) {
+        var path = ''
+        var encode = (options && options.encode) || encodeURIComponent
+
+        for (var i = 0; i < tokens.length; i++) {
+            var token = tokens[i]
+
+            if (typeof token === 'string') {
+                path += token
+                continue
+            }
+
+            var value = data ? data[token.name] : undefined
+            var segment
+
+            if (Array.isArray(value)) {
+                if (!token.repeat) {
+                    throw new TypeError('Expected "' + token.name + '" to not repeat, but got array')
+                }
+
+                if (value.length === 0) {
+                    if (token.optional) continue
+
+                    throw new TypeError('Expected "' + token.name + '" to not be empty')
+                }
+
+                for (var j = 0; j < value.length; j++) {
+                    segment = encode(value[j], token)
+
+                    if (!matches[i].test(segment)) {
+                        throw new TypeError('Expected all "' + token.name + '" to match "' + token.pattern + '"')
+                    }
+
+                    path += (j === 0 ? token.prefix : token.delimiter) + segment
+                }
+
+                continue
+            }
+
+            if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+                segment = encode(String(value), token)
+
+                if (!matches[i].test(segment)) {
+                    throw new TypeError('Expected "' + token.name + '" to match "' + token.pattern + '", but got "' + segment + '"')
+                }
+
+                path += token.prefix + segment
+                continue
+            }
+
+            if (token.optional) {
+                // Prepend partial segment prefixes.
+                if (token.partial) path += token.prefix
+
+                continue
+            }
+
+            throw new TypeError('Expected "' + token.name + '" to be ' + (token.repeat ? 'an array' : 'a string'))
+        }
+
+        return path
+    }
 }
 
 /**
@@ -1255,8 +1253,8 @@ function tokensToFunction (tokens) {
  * @param  {string} str
  * @return {string}
  */
-function escapeString (str) {
-  return str.replace(/([.+*?=^!:${}()[\]|/\\])/g, '\\$1')
+function escapeString(str) {
+    return str.replace(/([.+*?=^!:${}()[\]|/\\])/g, '\\$1')
 }
 
 /**
@@ -1265,8 +1263,8 @@ function escapeString (str) {
  * @param  {string} group
  * @return {string}
  */
-function escapeGroup (group) {
-  return group.replace(/([=!:$/()])/g, '\\$1')
+function escapeGroup(group) {
+    return group.replace(/([=!:$/()])/g, '\\$1')
 }
 
 /**
@@ -1275,8 +1273,8 @@ function escapeGroup (group) {
  * @param  {Object} options
  * @return {string}
  */
-function flags (options) {
-  return options && options.sensitive ? '' : 'i'
+function flags(options) {
+    return options && options.sensitive ? '' : 'i'
 }
 
 /**
@@ -1286,27 +1284,27 @@ function flags (options) {
  * @param  {Array=}  keys
  * @return {!RegExp}
  */
-function regexpToRegexp (path, keys) {
-  if (!keys) return path
+function regexpToRegexp(path, keys) {
+    if (!keys) return path
 
-  // Use a negative lookahead to match only capturing groups.
-  var groups = path.source.match(/\((?!\?)/g)
+    // Use a negative lookahead to match only capturing groups.
+    var groups = path.source.match(/\((?!\?)/g)
 
-  if (groups) {
-    for (var i = 0; i < groups.length; i++) {
-      keys.push({
-        name: i,
-        prefix: null,
-        delimiter: null,
-        optional: false,
-        repeat: false,
-        partial: false,
-        pattern: null
-      })
+    if (groups) {
+        for (var i = 0; i < groups.length; i++) {
+            keys.push({
+                name: i,
+                prefix: null,
+                delimiter: null,
+                optional: false,
+                repeat: false,
+                partial: false,
+                pattern: null
+            })
+        }
     }
-  }
 
-  return path
+    return path
 }
 
 /**
@@ -1317,14 +1315,14 @@ function regexpToRegexp (path, keys) {
  * @param  {Object=} options
  * @return {!RegExp}
  */
-function arrayToRegexp (path, keys, options) {
-  var parts = []
+function arrayToRegexp(path, keys, options) {
+    var parts = []
 
-  for (var i = 0; i < path.length; i++) {
-    parts.push(pathToRegexp(path[i], keys, options).source)
-  }
+    for (var i = 0; i < path.length; i++) {
+        parts.push(pathToRegexp(path[i], keys, options).source)
+    }
 
-  return new RegExp('(?:' + parts.join('|') + ')', flags(options))
+    return new RegExp('(?:' + parts.join('|') + ')', flags(options))
 }
 
 /**
@@ -1335,8 +1333,8 @@ function arrayToRegexp (path, keys, options) {
  * @param  {Object=} options
  * @return {!RegExp}
  */
-function stringToRegexp (path, keys, options) {
-  return tokensToRegExp(parse(path, options), keys, options)
+function stringToRegexp(path, keys, options) {
+    return tokensToRegExp(parse(path, options), keys, options)
 }
 
 /**
@@ -1347,54 +1345,54 @@ function stringToRegexp (path, keys, options) {
  * @param  {Object=} options
  * @return {!RegExp}
  */
-function tokensToRegExp (tokens, keys, options) {
-  options = options || {}
+function tokensToRegExp(tokens, keys, options) {
+    options = options || {}
 
-  var strict = options.strict
-  var start = options.start !== false
-  var end = options.end !== false
-  var delimiter = escapeString(options.delimiter || DEFAULT_DELIMITER)
-  var delimiters = options.delimiters || DEFAULT_DELIMITERS
-  var endsWith = [].concat(options.endsWith || []).map(escapeString).concat('$').join('|')
-  var route = start ? '^' : ''
-  var isEndDelimited = tokens.length === 0
+    var strict = options.strict
+    var start = options.start !== false
+    var end = options.end !== false
+    var delimiter = escapeString(options.delimiter || DEFAULT_DELIMITER)
+    var delimiters = options.delimiters || DEFAULT_DELIMITERS
+    var endsWith = [].concat(options.endsWith || []).map(escapeString).concat('$').join('|')
+    var route = start ? '^' : ''
+    var isEndDelimited = tokens.length === 0
 
-  // Iterate over the tokens and create our regexp string.
-  for (var i = 0; i < tokens.length; i++) {
-    var token = tokens[i]
+    // Iterate over the tokens and create our regexp string.
+    for (var i = 0; i < tokens.length; i++) {
+        var token = tokens[i]
 
-    if (typeof token === 'string') {
-      route += escapeString(token)
-      isEndDelimited = i === tokens.length - 1 && delimiters.indexOf(token[token.length - 1]) > -1
-    } else {
-      var capture = token.repeat
-        ? '(?:' + token.pattern + ')(?:' + escapeString(token.delimiter) + '(?:' + token.pattern + '))*'
-        : token.pattern
-
-      if (keys) keys.push(token)
-
-      if (token.optional) {
-        if (token.partial) {
-          route += escapeString(token.prefix) + '(' + capture + ')?'
+        if (typeof token === 'string') {
+            route += escapeString(token)
+            isEndDelimited = i === tokens.length - 1 && delimiters.indexOf(token[token.length - 1]) > -1
         } else {
-          route += '(?:' + escapeString(token.prefix) + '(' + capture + '))?'
+            var capture = token.repeat
+                ? '(?:' + token.pattern + ')(?:' + escapeString(token.delimiter) + '(?:' + token.pattern + '))*'
+                : token.pattern
+
+            if (keys) keys.push(token)
+
+            if (token.optional) {
+                if (token.partial) {
+                    route += escapeString(token.prefix) + '(' + capture + ')?'
+                } else {
+                    route += '(?:' + escapeString(token.prefix) + '(' + capture + '))?'
+                }
+            } else {
+                route += escapeString(token.prefix) + '(' + capture + ')'
+            }
         }
-      } else {
-        route += escapeString(token.prefix) + '(' + capture + ')'
-      }
     }
-  }
 
-  if (end) {
-    if (!strict) route += '(?:' + delimiter + ')?'
+    if (end) {
+        if (!strict) route += '(?:' + delimiter + ')?'
 
-    route += endsWith === '$' ? '$' : '(?=' + endsWith + ')'
-  } else {
-    if (!strict) route += '(?:' + delimiter + '(?=' + endsWith + '))?'
-    if (!isEndDelimited) route += '(?=' + delimiter + '|' + endsWith + ')'
-  }
+        route += endsWith === '$' ? '$' : '(?=' + endsWith + ')'
+    } else {
+        if (!strict) route += '(?:' + delimiter + '(?=' + endsWith + '))?'
+        if (!isEndDelimited) route += '(?=' + delimiter + '|' + endsWith + ')'
+    }
 
-  return new RegExp(route, flags(options))
+    return new RegExp(route, flags(options))
 }
 
 /**
@@ -1409,16 +1407,16 @@ function tokensToRegExp (tokens, keys, options) {
  * @param  {Object=}               options
  * @return {!RegExp}
  */
-function pathToRegexp (path, keys, options) {
-  if (path instanceof RegExp) {
-    return regexpToRegexp(path, keys)
-  }
+function pathToRegexp(path, keys, options) {
+    if (path instanceof RegExp) {
+        return regexpToRegexp(path, keys)
+    }
 
-  if (Array.isArray(path)) {
-    return arrayToRegexp(/** @type {!Array} */ (path), keys, options)
-  }
+    if (Array.isArray(path)) {
+        return arrayToRegexp(/** @type {!Array} */(path), keys, options)
+    }
 
-  return stringToRegexp(/** @type {string} */ (path), keys, options)
+    return stringToRegexp(/** @type {string} */(path), keys, options)
 }
 /*=============================================================/path-to-regexp=============================================*/
 
@@ -1427,249 +1425,243 @@ const cacheLimit = 10000
 let cacheCount = 0
 
 const compilePath = (pattern, options) => {
-  const cacheKey = `${options.end}${options.strict}${options.sensitive}`
-  const cache = patternCache[cacheKey] || (patternCache[cacheKey] = {})
+    const cacheKey = `${options.end}${options.strict}${options.sensitive}`
+    const cache = patternCache[cacheKey] || (patternCache[cacheKey] = {})
 
-  if (cache[pattern])
-    return cache[pattern]
+    if (cache[pattern])
+        return cache[pattern]
 
-  const keys = []
-  const re = pathToRegexp(pattern, keys, options)
-  const compiledPattern = { re, keys }
+    const keys = []
+    const re = pathToRegexp(pattern, keys, options)
+    const compiledPattern = { re, keys }
 
-  if (cacheCount < cacheLimit) {
-    cache[pattern] = compiledPattern
-    cacheCount++
-  }
+    if (cacheCount < cacheLimit) {
+        cache[pattern] = compiledPattern
+        cacheCount++
+    }
 
-  return compiledPattern
+    return compiledPattern
 }
 
 /**
  * Public API for matching a URL pathname to a path pattern.
  */
 const matchPath = (pathname, options = {}) => {
-  if (typeof options === 'string')
-    options = { path: options }
+    if (typeof options === 'string')
+        options = { path: options }
 
-  const { path = '/', exact = false, strict = false, sensitive = false } = options
-  const { re, keys } = compilePath(path, { end: exact, strict, sensitive })
-  const match = re.exec(pathname)
+    const { path = '/', exact = false, strict = false, sensitive = false } = options
+    const { re, keys } = compilePath(path, { end: exact, strict, sensitive })
+    const match = re.exec(pathname)
 
-  if (!match)
-    return null
+    if (!match)
+        return null
 
-  const [ url, ...values ] = match
-  const isExact = pathname === url
+    const [url, ...values] = match
+    const isExact = pathname === url
 
-  if (exact && !isExact)
-    return null
+    if (exact && !isExact)
+        return null
 
-  return {
-    path, // the path pattern used to match
-    url: path === '/' && url === '' ? '/' : url, // the matched portion of the URL
-    isExact, // whether or not we matched exactly
-    params: keys.reduce((memo, key, index) => {
-      memo[key.name] = values[index]
-      return memo
-    }, {})
-  }
+    return {
+        path, // the path pattern used to match
+        url: path === '/' && url === '' ? '/' : url, // the matched portion of the URL
+        isExact, // whether or not we matched exactly
+        params: keys.reduce((memo, key, index) => {
+            memo[key.name] = values[index]
+            return memo
+        }, {})
+    }
 }
 
 /*============================================================/matchPath==============================================*/
 
-class Router extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            match: this.computeMatch(props.history.location.pathname)
-        }
-    }
+// class Router extends React.Component {
+//     constructor(props) {
+//         super(props)
+//         this.state = {
+//             match: this.computeMatch(props.history.location.pathname)
+//         }
+//     }
 
-    getChildContext() {
-        return {
-            router: {
-                ...this.context.router,
-                history: this.props.history,
-                route: {
-                    location: this.props.history.location,
-                    match: this.state.match,
-                }
-            }
-        }
-    }
+//     getChildContext() {
+//         return {
+//             router: {
+//                 ...this.context.router,
+//                 history: this.props.history,
+//                 route: {
+//                     location: this.props.history.location,
+//                     match: this.state.match,
+//                 }
+//             }
+//         }
+//     }
 
-    computeMatch(pathname) {
-        return {
-            path: '/',
-            url: '/',
-            params: {},
-            isExact: pathname === "/",
-        }
-    }
+//     computeMatch(pathname) {
+//         return {
+//             path: '/',
+//             url: '/',
+//             params: {},
+//             isExact: pathname === "/",
+//         }
+//     }
 
-    componentWillMount() {
-        const { history } = this.props
-        this.unlisten = history.listen(() => {
-            this.setState({
-                match: this.computeMatch(history.location.pathname)
-            })
-        })
-    }
+//     componentWillMount() {
+//         const { history } = this.props
+//         this.unlisten = history.listen(() => {
+//             this.setState({
+//                 match: this.computeMatch(history.location.pathname)
+//             })
+//         })
+//     }
 
-    componentWillReceiveProps(nextProps) {
+//     componentWillReceiveProps(nextProps) {
 
-    }
+//     }
 
-    componentWillUnmount() {
-        this.unlisten()
-    }
+//     componentWillUnmount() {
+//         this.unlisten()
+//     }
 
-    render() {
-        const { children } = this.props
-        return children ? React.Children.only(children) : null
-    }
-}
+//     render() {
+//         const { children } = this.props
+//         return children ? React.Children.only(children) : null
+//     }
+// }
 
-class BrowserRouter extends React.Component {
-    constructor(props) {
-        super(props)
-        this.history = History.createBrowserHistory(props)
-    }
+// class BrowserRouter extends React.Component {
+//     constructor(props) {
+//         super(props)
+//         this.history = History.createBrowserHistory(props)
+//     }
 
-    render() {
-        return <Router history={this.history} children={this.props.children}/>
-    }
-}
+//     render() {
+//         return <Router history={this.history} children={this.props.children} />
+//     }
+// }
 
-class HashRouter extends React.Component {
-    constructor(props) {
-        super(props)
-        this.history = History.createHashHistory(props)
-    }
+// class HashRouter extends React.Component {
+//     constructor(props) {
+//         super(props)
+//         this.history = History.createHashHistory(props)
+//     }
 
-    render() {
-        return <Router history={this.history} children={this.props.children}/>
-    }
-}
+//     render() {
+//         return <Router history={this.history} children={this.props.children} />
+//     }
+// }
 
-class Route extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            match: this.computeMatch(this.props, this.context.router)
-        }
-    }
+// class Route extends React.Component {
+//     constructor(props) {
+//         super(props)
+//         this.state = {
+//             match: this.computeMatch(this.props, this.context.router)
+//         }
+//     }
 
-    getChildContext() {
-      return {
-        router: {
-          ...this.context.router,
-          route: {
-            location: this.props.location,
-            match: this.state.match
-          }
-        }
-      }
-    }
+//     getChildContext() {
+//         return {
+//             router: {
+//                 ...this.context.router,
+//                 route: {
+//                     location: this.props.location,
+//                     match: this.state.match
+//                 }
+//             }
+//         }
+//     }
 
-    /**
-     * props => computedMatch, location, path, strict, exact, sensitive
-     * @param {*props} param0 
-     * @param {*context.router} router 
-     */
-    computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
-        // for Switch
-        if (computedMatch) {
-            return computedMatch
-        }
+//     /**
+//      * props => computedMatch, location, path, strict, exact, sensitive
+//      * @param {*props} param0 
+//      * @param {*context.router} router 
+//      */
+//     computeMatch({ computedMatch, location, path, strict, exact, sensitive }, router) {
+//         // for Switch
+//         if (computedMatch) {
+//             return computedMatch
+//         }
 
-        const { route } = router
-        const pathname = (location || route.location).pathname
-        return path ? matchPath(pathname, { path, strict, exact, sensitive }) : route.match
-    }
+//         const { route } = router
+//         const pathname = (location || route.location).pathname
+//         return path ? matchPath(pathname, { path, strict, exact, sensitive }) : route.match
+//     }
 
-    componentWillReceiveProps(nextProps, nextContext) {
-      this.setState({
-        match: this.computeMatch(nextProps, nextContext.router)
-      })
-    }
+//     componentWillReceiveProps(nextProps, nextContext) {
+//         this.setState({
+//             match: this.computeMatch(nextProps, nextContext.router)
+//         })
+//     }
 
-    render() {
-      const { match } = this.state
-      const { children, component, render } = this.props
-      const { history, route, staticContext } = this.context.router
-      const location = this.props.location || route.location
-      const props = { match, location, history, staticContext }
+//     render() {
+//         const { match } = this.state
+//         const { children, component, render } = this.props
+//         const { history, route, staticContext } = this.context.router
+//         const location = this.props.location || route.location
+//         const props = { match, location, history, staticContext }
 
-      return (
-        component ? ( // component prop gets first priority, only called if there's a match
-          match ? React.createElement(component, props) : null
-        ) : render ? ( // render prop is next, only called if there's a match
-          match ? render(props) : null
-        ) : children ? ( // children come last, always called
-          typeof children === 'function' ? (
-            children(props)
-          ) : !isEmptyChildren(children) ? (
-            React.Children.only(children)
-          ) : (
-            null
-          )
-        ) : (
-          null
-        )
-      )
-    }
-}
+//         return (
+//             component ? ( // component prop gets first priority, only called if there's a match
+//                 match ? React.createElement(component, props) : null
+//             ) : render ? ( // render prop is next, only called if there's a match
+//                 match ? render(props) : null
+//             ) : children ? ( // children come last, always called
+//                 typeof children === 'function' ? (
+//                     children(props)
+//                 ) : !isEmptyChildren(children) ? (
+//                     React.Children.only(children)
+//                 ) : (
+//                         null
+//                     )
+//             ) : (
+//                     null
+//                 )
+//         )
+//     }
+// }
 
-const isModifiedEvent = (event) =>
-  !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+// const isModifiedEvent = (event) =>
+//     !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
 
-class Link extends React.Component {
-  handleClick = (event) => {
-    if (this.props.onClick)
-      this.props.onClick(event)
+// class Link extends React.Component {
+//     constructor(props) {
+//         super(props)
+//         this.handleClick = this.handleClick.bind(this)
+//     }
+//     handleClick(event) {
+//         if (this.props.onClick)
+//             this.props.onClick(event)
 
-    if (
-      !event.defaultPrevented && // onClick prevented default
-      event.button === 0 && // ignore right clicks
-      !this.props.target && // let browser handle "target=_blank" etc.
-      !isModifiedEvent(event) // ignore clicks with modifier keys
-    ) {
-      event.preventDefault()
+//         if (
+//             !event.defaultPrevented && // onClick prevented default
+//             event.button === 0 && // ignore right clicks
+//             !this.props.target && // let browser handle "target=_blank" etc.
+//             !isModifiedEvent(event) // ignore clicks with modifier keys
+//         ) {
+//             event.preventDefault()
 
-      const { history } = this.context.router
-      const { replace, to } = this.props
+//             const { history } = this.context.router
+//             const { replace, to } = this.props
 
-      if (replace) {
-        history.replace(to)
-      } else {
-        history.push(to)
-      }
-    }
-  }
+//             if (replace) {
+//                 history.replace(to)
+//             } else {
+//                 history.push(to)
+//             }
+//         }
+//     }
 
-  render() {
-    const { replace, to, innerRef, ...props } = this.props // eslint-disable-line no-unused-vars
+//     render() {
+//         const { replace, to, innerRef, ...props } = this.props // eslint-disable-line no-unused-vars
 
-    const href = this.context.router.history.createHref(
-      typeof to === 'string' ? { pathname: to } : to
-    )
+//         const href = this.context.router.history.createHref(
+//             typeof to === 'string' ? { pathname: to } : to
+//         )
 
-    return <a {...props} onClick={this.handleClick} href={href} ref={innerRef}/>
-  }
-}
-  return {
-    BrowserRouter,
-    HashRouter,
-    Router,
-    Route,
-    // Switch,
-    // Redirect,
-    Link,
-  }
-})()
-debugger
+//         return <a {...props} onClick={this.handleClick} href={href} ref={innerRef} />
+//     }
+// }
+
 // let ReactRouterDOM = {
 //     BrowserRouter,
 //     HashRouter,
