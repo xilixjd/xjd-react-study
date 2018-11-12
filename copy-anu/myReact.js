@@ -425,6 +425,10 @@ function isEmpty(obj) {
     }
     return 0;
 }
+
+function isValidElement(vnode) {
+    return vnode && vnode.vtype
+}
 /* ==========================================/util========================================== */
 
 /* ==========================================event========================================== */
@@ -1176,6 +1180,7 @@ let React = {
     Component: Component,
     createElement: createElement,
     cloneElement: cloneElement,
+    isValidElement: isValidElement,
     Children: Children
 }
 

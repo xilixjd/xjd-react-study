@@ -86,8 +86,8 @@ function wrapMapToPropsConstant(getConstant) {
     return function initConstantSelector(dispatch, options) {
         const constant = getConstant(dispatch, options)
 
-        function constantSelector() { return constant}
-        constantSelector.dependsOnOwnProps = true
+        function constantSelector() { return constant }
+        constantSelector.dependsOnOwnProps = false
         return constantSelector
     }
 }
@@ -146,6 +146,7 @@ function pureFinalPropsSelectorFactory(
         // 感觉做这些判断的唯一意义就是少调用一些 mapStateToProps？
         // 所以也可以粗暴的直接全部 merge
         const propsChanged = !shallowEqual(nextOwnProps, ownProps)
+        // redux 中有一个机制专门应对这种情况（不变的时候直接返回原 state）
         const stateChanged = !strictEqual(nextState, state)
         state = nextState
         ownProps = nextOwnProps
