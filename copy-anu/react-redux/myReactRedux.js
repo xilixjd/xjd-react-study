@@ -311,14 +311,13 @@ function connectAdvanced(
                 if (this.selector.shouldComponentUpdate) this.forceUpdate()
             }
             componentWillReceiveProps(nextProps) {
-                // 基本进不来这个生命周期？
                 this.selector.run(nextProps)
             }
             shouldComponentUpdate() {
                 return this.selector.shouldComponentUpdate
             }
             componentWillUnmount() {
-                this.unsubscribe()
+                this.unsubscribe && this.unsubscribe()
                 this.unsubscribe = null
                 this.selector.run = null
                 this.selector = null
@@ -338,9 +337,11 @@ function connectAdvanced(
                 this.selector.run(this.props)
             }
             trySubscribe() {
+                if (!shouldHandleStateChanges) return
                 this.unsubscribe = this.store.subscribe(this.onStateChange.bind(this))
             }
             onStateChange() {
+                debugger
                 this.selector.run(this.props)
                 if (this.selector.shouldComponentUpdate) {
                     this.setState({})

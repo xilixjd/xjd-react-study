@@ -20,6 +20,8 @@
 <!--<script type='text/javascript' src="./dist/devtools.js"></script>-->
 
 <script src="./myReact.js"></script>
+<!-- <script src="./React.js"></script> -->
+<!-- <script src="./ReactBefore16.js"></script> -->
  <!-- <script src="./dist/react-dom.js"></script> -->
 
    <!--  <script src="./test/redux.js"></script>
@@ -107,11 +109,11 @@
                     <div>
                         <h2>{this.state.num}</h2>
                         {/*this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />*/}
-                        {<Inner className={this.state.aaa}/>}
+                        {<Inner callback={this.change.bind(this)} className={this.state.aaa}/>}
                         {/*<button onClick={() => this.click()}>click</button>*/}
                         <button style={ this.state.aaa === 'aaa' ? {} : {fontSize: "50px"}} onClick={() => this.click1()}>click</button>
                         <input ref={this.inputRefFunc}/>
-                        <A a={1}/>
+                        {/*<A a={1}/>*/}
                     </div>
                 )
              
@@ -134,6 +136,7 @@
                 this.setState({
                     num: this.state.num + 1,
                 })
+                // this.props.callback("bbb")
             }
             componentWillUpdate(){
                 console.log('Inner componentWillUpdate')

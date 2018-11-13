@@ -93,7 +93,8 @@ function setStateImpl(state, cb) {
     if (!hasDom) {
         //组件挂载期，willMount 时会调用
         if (this.__mounting) {
-            // ??? 这里没找到场景
+            debugger
+            // ??? 这里没找到场景，简单来说是 bug，在新版本 anu 中被修复
             //在挂载过程中，子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
             this.__renderInNext = true;
         }
@@ -218,6 +219,12 @@ Vnode.prototype = {
     $$typeof: 1
 }
 
+/**
+ * 该函数主要用于将由 babel 转换而来的 vnode 数组进行转换
+ * 转换诸如子数组平铺到最终数组中，还有就是将文字合并并转换为 text 节点
+ * @param {vnode 数组} original
+ * @param {是否合并} convert
+ */
 function _flattenChildren(original, convert) {
     let children = [],
         temp,
@@ -231,6 +238,7 @@ function _flattenChildren(original, convert) {
 
     while (temp.length) {
         //比较巧妙地判定是否为子数组
+        // 这里写一般的页面找不到子数组的场景
         if ((child = temp.pop()) && child.pop) {
             if (child.toJS) {
                 //兼容Immutable.js
@@ -248,6 +256,7 @@ function _flattenChildren(original, convert) {
             }
 
             if (childType < 6) {
+                debugger
                 if (lastText && convert) {
                     //false模式下不进行合并与转换
                     children[0].text = child + children[0].text;
@@ -264,6 +273,7 @@ function _flattenChildren(original, convert) {
                 lastText = true;
             } else if (childType === 8 && !child.type) {
                 // 针对 <a>{this.props}</a> props 可能是 object 形式，这种情况要对 object 进行转换
+                // +++ React 都不支持该类型
                 child = JSON.stringify(child)
                 if (lastText && convert) {
                     //false模式下不进行合并与转换
@@ -526,6 +536,7 @@ let eventProto = SyntheticEvent.prototype = {
         if (e.preventDefault) {
             e.preventDefault()
         }
+        this.defaultPrevented = true
     },
     fixHooks: function fixHooks() {},
     stopPropagation: function stopPropagation() {

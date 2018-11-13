@@ -18,7 +18,7 @@
 <!-- <script src="../React.js"></script> -->
 <script src="../babel.js"></script>
 <script src="./history.js"></script>
-<script src="./myReactRouterDom.js"></script>
+<script src="./matchPath.js"></script>
 <!-- <script src="./myReactRouterDom2.js"></script> -->
 <!-- <script src="./react-router-dom.js"></script> -->
 <!-- <script src="../redux/counter-vanilla/myRedux.js"></script> -->
@@ -268,9 +268,10 @@
     }
     
     function Home(p) {
+        let renderArray = [<h2>Home</h2>, <h3>Home2</h3>]
         return (
         <div>
-            <h2>Home</h2>
+            {renderArray}
         </div>
         );
     }
