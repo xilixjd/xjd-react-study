@@ -341,7 +341,6 @@ function connectAdvanced(
                 this.unsubscribe = this.store.subscribe(this.onStateChange.bind(this))
             }
             onStateChange() {
-                debugger
                 this.selector.run(this.props)
                 if (this.selector.shouldComponentUpdate) {
                     this.setState({})

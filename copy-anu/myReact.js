@@ -93,7 +93,6 @@ function setStateImpl(state, cb) {
     if (!hasDom) {
         //组件挂载期，willMount 时会调用
         if (this.__mounting) {
-            debugger
             // ??? 这里没找到场景，简单来说是 bug，在新版本 anu 中被修复
             //在挂载过程中，子组件在componentWillReceiveProps里调用父组件的setState，延迟到下一周期更新
             this.__renderInNext = true;
@@ -256,7 +255,6 @@ function _flattenChildren(original, convert) {
             }
 
             if (childType < 6) {
-                debugger
                 if (lastText && convert) {
                     //false模式下不进行合并与转换
                     children[0].text = child + children[0].text;
@@ -460,6 +458,7 @@ function addEvent(el, eventType, fn, bool) {
 }
 
 function dispatchEvent(e, type, end) {
+    debugger
     e = new SyntheticEvent(e)
     if (type) {
         e.type = type
@@ -536,6 +535,7 @@ let eventProto = SyntheticEvent.prototype = {
         if (e.preventDefault) {
             e.preventDefault()
         }
+        // +++
         this.defaultPrevented = true
     },
     fixHooks: function fixHooks() {},
