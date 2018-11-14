@@ -108,8 +108,8 @@
                 return(
                     <div>
                         <h2>{this.state.num}</h2>
-                        {/*this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />*/}
-                        {<Inner callback={this.change.bind(this)} className={this.state.aaa}/>}
+                        {this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />}
+                        {/*<Inner callback={this.change.bind(this)} className={this.state.aaa}/>*/}
                         {/*<button onClick={() => this.click()}>click</button>*/}
                         <button style={ this.state.aaa === 'aaa' ? {} : {fontSize: "50px"}} onClick={() => this.click1()}>click</button>
                         <input ref={this.inputRefFunc}/>

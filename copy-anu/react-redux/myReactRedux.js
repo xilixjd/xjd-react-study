@@ -87,7 +87,7 @@ function wrapMapToPropsConstant(getConstant) {
         const constant = getConstant(dispatch, options)
 
         function constantSelector() { return constant }
-        constantSelector.dependsOnOwnProps = false
+        constantSelector.dependsOnOwnProps = true
         return constantSelector
     }
 }
@@ -112,7 +112,7 @@ function getInitMapStateToPropsWrap(mapStateToProp) {
 
 function getInitMapDispatchToPropsWrap(mapDispatchToProps) {
     // 这里不考虑 mapDispatchToProps 是 object 的情况
-    return mapDispatchToProps 
+    return mapDispatchToProps
             ? wrapMapToPropsFunc(mapDispatchToProps) 
             : wrapMapToPropsConstant((dispatch) => ({ dispatch }))
 }
@@ -146,7 +146,6 @@ function pureFinalPropsSelectorFactory(
         // 感觉做这些判断的唯一意义就是少调用一些 mapStateToProps？
         // 所以也可以粗暴的直接全部 merge
         const propsChanged = !shallowEqual(nextOwnProps, ownProps)
-        // redux 中有一个机制专门应对这种情况（不变的时候直接返回原 state）
         const stateChanged = !strictEqual(nextState, state)
         state = nextState
         ownProps = nextOwnProps
@@ -311,13 +310,14 @@ function connectAdvanced(
                 if (this.selector.shouldComponentUpdate) this.forceUpdate()
             }
             componentWillReceiveProps(nextProps) {
+                // 基本进不来这个生命周期？
                 this.selector.run(nextProps)
             }
             shouldComponentUpdate() {
                 return this.selector.shouldComponentUpdate
             }
             componentWillUnmount() {
-                this.unsubscribe && this.unsubscribe()
+                this.unsubscribe()
                 this.unsubscribe = null
                 this.selector.run = null
                 this.selector = null
@@ -337,7 +337,6 @@ function connectAdvanced(
                 this.selector.run(this.props)
             }
             trySubscribe() {
-                if (!shouldHandleStateChanges) return
                 this.unsubscribe = this.store.subscribe(this.onStateChange.bind(this))
             }
             onStateChange() {

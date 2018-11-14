@@ -134,6 +134,9 @@ let CurrentOwner = {
     cur: null
 }
 
+/**
+ *  调用 render() 函数的时候必然会调用 createElement，因为含有 JSX 语法
+ */
 function createElement(type, config, children) {
     let props = {}
     // props 是否为空 若为 0 则为空
@@ -458,7 +461,6 @@ function addEvent(el, eventType, fn, bool) {
 }
 
 function dispatchEvent(e, type, end) {
-    debugger
     e = new SyntheticEvent(e)
     if (type) {
         e.type = type
@@ -691,6 +693,9 @@ function mountText(vnode) {
     return node
 }
 
+/**
+ * 注意到这个函数用来 mount 虚拟 dom 节点，而不是组件
+ */
 function mountElement(vnode, context, prevRendered, mountQueue) {
     let type = vnode.type
     let props = vnode.props
@@ -702,6 +707,7 @@ function mountElement(vnode, context, prevRendered, mountQueue) {
     mountChildren(vnode, dom, context, mountQueue)
 
     if (vnode.checkProps) {
+        // 这里的 props 也是 dom 元素上的属性（style, onclick 事件等）
         diffProps(props, {}, vnode, dom)
     }
 
@@ -726,6 +732,9 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
         ref = vnode.ref,
         props = vnode.props
     var lastOwn = CurrentOwner.cur
+    // 这里对应的是组件的 instructor 中的 instructor(props, context)
+    // instance 在这里是组件的实例，总结起来就是 vnode 属于虚拟 dom
+    // 而在调用组件中一些方法及渲染时，却是在框架中定义一个组件的实例去完成
     let instance = new type(props, context)
     CurrentOwner.cur = lastOwn
     vnode._instance = instance
@@ -759,12 +768,12 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 function renderComponent(vnode, props, context) {
     let lastOwn = CurrentOwner.cur
     CurrentOwner.cur = this
-    // 这里是 anu 的一个 bug，因为原本是在 render 之后的，如果在 render 之后
-    // 那么组件的 render 函数中，this.context 取不到最新的 context
-    
     let rendered = this.__StatelessRender ? this.__StatelessRender(props, context) : this.render()
+    // 用以对 null 节点做处理，不能让其返回 null，还得给他赋一个虚拟 dom
     rendered = checkRenderNull(rendered, vnode.type)
     CurrentOwner.cur = lastOwn
+    // this 为 instance（组件实例）
+    // 其实这几步有点重复
     this.context = context
     this.props = props
     vnode._instance = this
@@ -1038,7 +1047,9 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         }
         // mount 带来的 mountQueue 不能进入，这里 queue.length 只会在上面的 mountVnode 触发才会 push
         // 而 diff 的时候只会在 diff new component 的时候才会 mountVnode 中 mountComponent，再 push 一个 component
+        // 不做这一步，新 component 的 componentDidMount 生命周期都不会进入
         if (!mountAll && queue.length) {
+            debugger
             clearRefsAndMounts(queue)
         }
     })
@@ -1046,6 +1057,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
 }
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
+    debugger
     var dom = node
     // ??? 这里只会出现 div 等 dom (vtype 只能等于 1)？
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
