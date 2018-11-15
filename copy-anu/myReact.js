@@ -1057,10 +1057,11 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
 }
 
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
-    debugger
     var dom = node
     // ??? 这里只会出现 div 等 dom (vtype 只能等于 1)？
+    // 没找到场景。。
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
+        debugger
         disposeVnode(lastVnode)
         dom = mountVnode(nextVnode, context, null, mountQueue)
         var parent = node.parentNode
