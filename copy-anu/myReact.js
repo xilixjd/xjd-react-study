@@ -1,3 +1,5 @@
+// bug1: didMount/willMount 和 willReiceiveProps 的 setState 没有合并
+
 /* ==========================================Component========================================== */
 function Component(props, context) {
     //防止用户在构造器生成JSX
@@ -88,7 +90,6 @@ function setStateImpl(state, cb) {
     } else {
         this.__pendingStates.push(state)
     }
-
     let hasDom = this.__current._hostNode
     if (!hasDom) {
         //组件挂载期，willMount 时会调用
@@ -368,7 +369,11 @@ function removeDOMElement(node) {
     node = null
 }
 
-// 对比对象是否相等
+/**
+ * 不相等返回 true
+ * @param {*} obj1 
+ * @param {*} obj2 
+ */
 function objectCompare(obj1, obj2) {
     let obj1Stringfy
     let obj2Stringfy
@@ -598,7 +603,7 @@ let propsHook = {
     style: function style(dom, _, val, lastProps) {
         let oldStyle = lastProps.style || {}
         let newStyle = val || {}
-        if (objectCompare(oldStyle, newStyle) === true) {
+        if (!objectCompare(oldStyle, newStyle) === true) {
             return
         }
         for (let name in newStyle) {
@@ -812,7 +817,7 @@ function refreshComponent(instance, mountQueue) {
     let dom = instance.__current._hostNode
     dom = _refreshComponent(instance, dom, mountQueue)
     // ??? 这里有必要？
-    // while (instance.__renderInNextCycle) {
+    // while (instance.__renderInNext) {
     //     dom = _refreshComponent(instance, dom, mountQueue);
     // }
 
@@ -1049,7 +1054,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         // 而 diff 的时候只会在 diff new component 的时候才会 mountVnode 中 mountComponent，再 push 一个 component
         // 不做这一步，新 component 的 componentDidMount 生命周期都不会进入
         if (!mountAll && queue.length) {
-            debugger
+            // debugger
             clearRefsAndMounts(queue)
         }
     })
@@ -1059,7 +1064,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
 function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     var dom = node
     // ??? 这里只会出现 div 等 dom (vtype 只能等于 1)？
-    // 没找到场景。。
+    // 没找到场景。。有场景了 react-router 的 index.html
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
         debugger
         disposeVnode(lastVnode)
@@ -1163,7 +1168,9 @@ function clearRefsAndMounts(queue) {
         }
         instance.__mounting = false
         // 第一次 Mount 的时候 instance.__renderInNext 为 null
+        // __renderInNext 控制了在 didMount 或者 willMount 或者 willReceiveProps 里组件的重新渲染（setState）
         while (instance.__renderInNext) {
+            debugger
             _refreshComponent(instance, instance.__current._hostNode, [])
         }
         clearArray(instance.__pendingCallbacks).forEach(function(fn) {
