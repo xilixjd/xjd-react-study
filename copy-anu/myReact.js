@@ -1169,13 +1169,21 @@ function clearRefsAndMounts(queue) {
         instance.__mounting = false
         // 第一次 Mount 的时候 instance.__renderInNext 为 null
         // __renderInNext 控制了在 didMount 或者 willMount 或者 willReceiveProps 里组件的重新渲染（setState）
+        // anu bug
+        // while (instance.__renderInNext) {
+        //     debugger
+        //     _refreshComponent(instance, instance.__current._hostNode, [])
+        // }
+        clearArray(instance.__pendingCallbacks).forEach(function(fn) {
+            fn.call(instance)
+        })
+    })
+    // ??? 待考证
+    queue.reverse().forEach(function(instance) {
         while (instance.__renderInNext) {
             debugger
             _refreshComponent(instance, instance.__current._hostNode, [])
         }
-        clearArray(instance.__pendingCallbacks).forEach(function(fn) {
-            fn.call(instance)
-        })
     })
     queue.length = 0
 }
