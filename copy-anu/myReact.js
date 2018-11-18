@@ -761,6 +761,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     let dom = mountVnode(rendered, childContext, prevRendered, mountQueue)
     vnode._hostNode = dom
+    // mount 的时候按照 孙-子-父 的顺序 push
     mountQueue.push(instance)
     if (ref) {
         pendingRefs.push(ref.bind(null, instance))
@@ -934,6 +935,7 @@ function updateElement(lastVnode, nextVnode, context, mountQueue) {
 
 /**
  * 只适用于同样的 component props 变化时才调用
+ * 且更新时必然会调用，就像父组件更新一定引发子组件 componentWillReceiveProps 调用一样
  * @param {*} lastVnode 
  * @param {*} nextVnode 
  * @param {*} context 
@@ -1066,7 +1068,6 @@ function alignVnode(lastVnode, nextVnode, node, context, mountQueue) {
     // ??? 这里只会出现 div 等 dom (vtype 只能等于 1)？
     // 没找到场景。。有场景了 react-router 的 index.html
     if (lastVnode.type !== nextVnode.type || lastVnode.key !== nextVnode.key) {
-        debugger
         disposeVnode(lastVnode)
         dom = mountVnode(nextVnode, context, null, mountQueue)
         var parent = node.parentNode
@@ -1160,6 +1161,7 @@ function clearRefsAndMounts(queue) {
     refs.forEach(function(fn) {
         fn()
     })
+    // mount 的时候按照 孙-子-父 的顺序
     queue.forEach(function(instance) {
         // 只用于第一次 Mount 的时候调用，之后设为 null
         if (instance.componentDidMount) {
@@ -1171,7 +1173,6 @@ function clearRefsAndMounts(queue) {
         // __renderInNext 控制了在 didMount 或者 willMount 或者 willReceiveProps 里组件的重新渲染（setState）
         // anu bug
         // while (instance.__renderInNext) {
-        //     debugger
         //     _refreshComponent(instance, instance.__current._hostNode, [])
         // }
         clearArray(instance.__pendingCallbacks).forEach(function(fn) {
@@ -1179,9 +1180,13 @@ function clearRefsAndMounts(queue) {
         })
     })
     // ??? 待考证
+    // 由于 mount 的时候按照 孙-子-父 的顺序，更新的时候需要按照 父-子-孙 的顺序来将 dirtyComponent 更新
+    // 但是在按照 父-子-孙 的顺序 refresh 时，更新 父 的时候顺带把 子-孙 给更新了
+    // 所以 子、孙 的 __renderInNext 一般就已经为 null 了
+    // （照顾生命周期）
     queue.reverse().forEach(function(instance) {
         while (instance.__renderInNext) {
-            debugger
+            // debugger
             _refreshComponent(instance, instance.__current._hostNode, [])
         }
     })

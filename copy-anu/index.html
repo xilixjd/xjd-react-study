@@ -90,6 +90,11 @@
                     num: this.state.num + 2
                 })
             }
+            callback = () => {
+                this.setState({
+                    num: this.state.num + 1
+                })
+            }
             componentWillMount() {
                 console.log("App componentWillMount")
                 this.setState({
@@ -115,7 +120,7 @@
                 return(
                     <div>
                         <h2>{this.state.num}</h2>
-                        {this.state.aaa === 'aaa' ?  <Inner className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />}
+                        {this.state.aaa === 'aaa' ?  <Inner callback={this.callback} className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />}
                         {/*<Inner callback={this.change.bind(this)} className={this.state.aaa}/>*/}
                         {/*<button onClick={() => this.click()}>click</button>*/}
                         <button style={ this.state.aaa === 'aaa' ? {} : {fontSize: "50px"}} onClick={() => this.click1()}>click</button>
@@ -137,9 +142,9 @@
             }
             componentWillMount(){
                 console.log('Inner componentWillMount')
-                // this.setState({
-                //     num: this.state.num + 1,
-                // })
+                this.setState({
+                    num: this.state.num + 1,
+                })
             }
             componentDidMount(){
                 console.log('Inner componentDidMount')
@@ -165,8 +170,17 @@
                     num: this.state.num + 1
                 })
             }
+            click1() {
+                this.props.callback()
+            }
             render() {
-                return <div className={this.props.className}><p>xxx{111}</p><p>{this.state.num}</p></div> 
+                return (
+                    <div className={this.props.className}>
+                        <p>xxx{111}</p><p>{this.state.num}</p>
+                        <button onClick={() => this.click1()}>click</button>
+                        {/*<Inner2/>*/}
+                    </div> 
+                )
             }
 
         }
