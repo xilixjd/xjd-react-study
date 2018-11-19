@@ -1,4 +1,4 @@
-// bug1: didMount/willMount 和 willReiceiveProps 的 setState 没有合并
+// bug1: didMount/willMount 和 willReiceiveProps 的 setState 没有合并（已修复）
 
 /* ==========================================Component========================================== */
 function Component(props, context) {
