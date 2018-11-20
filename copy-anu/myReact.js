@@ -1,4 +1,4 @@
-// bug1: didMount/willMount 和 willReiceiveProps 的 setState 没有合并
+// bug1: didMount/willMount 和 willReiceiveProps 的 setState 没有合并（已修复）
 
 /* ==========================================Component========================================== */
 function Component(props, context) {
@@ -761,7 +761,7 @@ function mountComponent(vnode, context, prevRendered, mountQueue) {
 
     let dom = mountVnode(rendered, childContext, prevRendered, mountQueue)
     vnode._hostNode = dom
-    // mount 的时候按照 孙-子-父 的顺序 push
+    // mount 的时候 queue 中保存为 孙-子-父 的顺序 push
     mountQueue.push(instance)
     if (ref) {
         pendingRefs.push(ref.bind(null, instance))
@@ -1054,7 +1054,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
         }
         // mount 带来的 mountQueue 不能进入，这里 queue.length 只会在上面的 mountVnode 触发才会 push
         // 而 diff 的时候只会在 diff new component 的时候才会 mountVnode 中 mountComponent，再 push 一个 component
-        // 不做这一步，新 component 的 componentDidMount 生命周期都不会进入
+        // 做这一步，只为了调用新 component 的 componentDidMount 生命周期
         if (!mountAll && queue.length) {
             // debugger
             clearRefsAndMounts(queue)
@@ -1161,7 +1161,7 @@ function clearRefsAndMounts(queue) {
     refs.forEach(function(fn) {
         fn()
     })
-    // mount 的时候按照 孙-子-父 的顺序
+    // mount 的时候 queue 中保存为 孙-子-父 的顺序
     queue.forEach(function(instance) {
         // 只用于第一次 Mount 的时候调用，之后设为 null
         if (instance.componentDidMount) {
@@ -1180,13 +1180,12 @@ function clearRefsAndMounts(queue) {
         })
     })
     // ??? 待考证
-    // 由于 mount 的时候按照 孙-子-父 的顺序，更新的时候需要按照 父-子-孙 的顺序来将 dirtyComponent 更新
+    // 由于 mount 的时候按 queue 中保存为 孙-子-父 的顺序，更新的时候需要按照 父-子-孙 的顺序来将 dirtyComponent 更新
     // 但是在按照 父-子-孙 的顺序 refresh 时，更新 父 的时候顺带把 子-孙 给更新了
     // 所以 子、孙 的 __renderInNext 一般就已经为 null 了
     // （照顾生命周期）
     queue.reverse().forEach(function(instance) {
         while (instance.__renderInNext) {
-            // debugger
             _refreshComponent(instance, instance.__current._hostNode, [])
         }
     })
