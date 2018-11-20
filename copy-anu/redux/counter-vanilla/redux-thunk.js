@@ -1,12 +1,12 @@
 
 function createThunkMiddleware(extraArgument) {
   // middleware(middlewareAPI)
-  return function (middlewareAPI) {
+  return function middleware(middlewareAPI) {
     var dispatch = middlewareAPI.dispatch,
         getState = middlewareAPI.getState;
-    return function (next) {
+    return function thunk (next) {
       // 调用 store.dispatch 时即为此匿名 function
-      return function (action) {
+      return function thunkReturn(action) {
         if (typeof action === 'function') {
           return action(dispatch, getState, extraArgument);
         }
@@ -22,11 +22,11 @@ var thunk = createThunkMiddleware();
 thunk.withExtraArgument = createThunkMiddleware;
 
 function myThunkMiddleware() {
-  return function (middlewareAPI) {
+  return function middleware(middlewareAPI) {
     var dispatch = middlewareAPI.dispatch,
         getState = middlewareAPI.getState
-    return function (next) {
-      return function(action) {
+    return function myMiddle (next) {
+      return function myMiddleReturn(action) {
         console.log('prev', getState())
         next(action)
         console.log('next', action.type, getState())

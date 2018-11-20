@@ -139,7 +139,7 @@ let Redux = (function() {
             chain = middlewares.map((middleware) => {
                 return middleware(middlewareAPI)
             })
-            composeFunc = compose(...chain)
+            let composeFunc = compose(...chain)
             dispatch = composeFunc(store.dispatch)
 
             return {
