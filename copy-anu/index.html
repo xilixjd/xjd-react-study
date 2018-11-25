@@ -19,8 +19,8 @@
 <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
 <!--<script type='text/javascript' src="./dist/devtools.js"></script>-->
 
-<script src="./myReact.js"></script>
-<!-- <script src="./React16.js"></script> -->
+<!-- <script src="./myReact.js"></script> -->
+<script src="./React16.js"></script>
 <!-- <script src="./React.js"></script> -->
 <!-- <script src="./ReactBefore16.js"></script> -->
  <!-- <script src="./dist/react-dom.js"></script> -->
@@ -29,201 +29,216 @@
     <script src="./test/react-redux.js"></script>-->
     <script src="./babel.js"></script>
     <script type='text/babel'>
-        let A = (props) => <div>{props}</div>
+        // let A = (props) => <div>{props.a}</div>
+        // class App extends React.Component {
+        //     constructor(props) {
+        //         super(props)
+        //         this.state = {
+        //             aaa: 'aaa',
+        //             num: 0,
+        //         }
+        //         this.inputRef = null
+        //         this.inputRefFunc = (element) => {
+        //             this.inputRef = element
+        //         }
+        //     }
+        //     change(a){
+        //         this.setState({
+        //             aaa:a
+        //         })
+        //     }
+        //     click1() {
+        //         var equal = this.state.aaa === "aaa"
+        //         if (equal) {
+        //             this.setState({
+        //                 aaa: "bbb"
+        //             })
+        //         } else {
+        //             this.setState({
+        //                 aaa: "aaa"
+        //             })
+        //         }
+        //         this.setState({
+        //             num: this.state.num + 1
+        //         })
+        //         this.setState({
+        //             num: this.state.num + 1
+        //         })
+        //         var self = this
+        //         // setTimeout(function() {
+        //         //     self.setState({
+        //         //         num: self.state.num + 1
+        //         //     })
+        //         //     self.setState({
+        //         //         num: self.state.num + 1
+        //         //     })
+        //         // }, 0)
+        //         this.inputRef.focus()
+        //     }
+        //     click2() {
+        //         var equal = this.state.aaa === "aaa"
+        //         if (equal) {
+        //             this.setState({
+        //                 aaa: "bbb"
+        //             })
+        //         } else {
+        //             this.setState({
+        //                 aaa: "aaa"
+        //             })
+        //         }
+        //         this.setState({
+        //             num: this.state.num + 2
+        //         })
+        //     }
+        //     callback = () => {
+        //         this.setState({
+        //             num: this.state.num + 1
+        //         })
+        //     }
+        //     componentWillMount() {
+        //         console.log("App componentWillMount")
+        //         this.setState({
+        //             num: this.state.num + 1
+        //         })
+        //     }
+        //     componentDidMount() {
+        //         console.log('App componentDidMount')
+        //         this.setState({
+        //             num: this.state.num + 1
+        //         })
+        //         this.setState({
+        //             num: this.state.num + 1
+        //         })
+        //     }
+        //     componentWillUpdate() {
+        //         console.log('App componentWillUpdate')
+        //     }
+        //     componentWillReceiveProps(nextProps) {
+        //         console.log("App componentWillReceiveProps")
+        //     }
+        //     componentDidUpdate(){
+        //         console.log('App componentDidUpdate')
+        //     }
+        //     render() {
+        //         return(
+        //             <div>
+        //                 <h2>{this.state.num}</h2>
+        //                 {this.state.aaa === 'aaa' ?  <Inner callback={this.callback} className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />}
+        //                 {/*<Inner callback={this.change.bind(this)} className={this.state.aaa}/>*/}
+        //                 {/*<button onClick={() => this.click()}>click</button>*/}
+        //                 <button style={ this.state.aaa === 'aaa' ? {} : {fontSize: "50px"}} onClick={() => this.click1()}>click</button>
+        //                 <input ref={this.inputRefFunc}/>
+        //                 {<A a={1}/>}
+        //             </div>
+        //         )
+             
+        //     }
+        // }
+
+        // class Inner extends React.Component{
+        //      constructor(props){
+        //         super(props)
+        //         this.state = {
+        //             innerP: "init",
+        //             num: 0
+        //         }
+        //     }
+        //     componentWillMount(){
+        //         console.log('Inner componentWillMount')
+        //         this.setState({
+        //             num: this.state.num + 1,
+        //         })
+        //     }
+        //     componentDidMount(){
+        //         console.log('Inner componentDidMount')
+        //         this.setState({
+        //             num: this.state.num + 1,
+        //         })
+        //         // this.props.callback("bbb")
+        //     }
+        //     componentWillUpdate(){
+        //         console.log('Inner componentWillUpdate')
+        //     }
+        //     componentDidUpdate(){
+        //         console.log('Inner componentDidUpdate')
+        //     }
+        //     componentWillUnmount(){
+        //         console.log('Inner componentWillUnmount')
+        //     }
+        //     componentWillReceiveProps(nextProps) {
+        //         console.log("Inner componentWillReceiveProps")
+        //         // this.props.changeAppState("inner change")
+        //         this.setState({
+        //             innerP: "change",
+        //             num: this.state.num + 1
+        //         })
+        //     }
+        //     click1() {
+        //         this.props.callback()
+        //     }
+        //     render() {
+        //         return (
+        //             <div className={this.props.className}>
+        //                 <p>xxx{111}</p><p>{this.state.num}</p>
+        //                 <button onClick={() => this.click1()}>click</button>
+        //                 {/*<Inner2/>*/}
+        //             </div> 
+        //         )
+        //     }
+
+        // }
+        // class Inner2 extends React.Component{
+        //     constructor(props){
+        //         super(props)
+        //         this.state = {
+        //             innerP: "init",
+        //             num: 0,
+        //         }
+        //     }
+        //     componentWillMount(){
+        //         console.log('Inner2 componentWillMount')
+        //     }
+        //     componentDidMount(){
+        //         console.log('Inner2 componentDidMount')
+        //         // this.setState({
+        //         //     num: this.state.num + 1
+        //         // })
+        //     }
+        //     componentWillUpdate(){
+        //         console.log('Inner2 componentWillUpdate')
+        //     }
+        //     componentWillUnmount(){
+        //         console.log('Inner2 componentWillUnmount')
+        //     }
+        //     componentWillReceiveProps(nextProps) {
+        //         console.log("Inner2 componentWillReceiveProps")
+        //         // this.setState({
+        //         //     innerP: "change",
+        //         // })
+        //     }
+        //     render() {
+        //         return  <section className={this.props.className}><p>yyy</p><p>{this.state.innerP}</p><p>{this.state.num}</p></section>
+        //     }
+
+        // }
+
         class App extends React.Component {
-            constructor(props) {
-                super(props)
-                this.state = {
-                    aaa: 'aaa',
-                    num: 0,
-                }
-                this.inputRef = null
-                this.inputRefFunc = (element) => {
-                    this.inputRef = element
-                }
-            }
-            change(a){
-                this.setState({
-                    aaa:a
-                })
-            }
-            click1() {
-                var equal = this.state.aaa === "aaa"
-                if (equal) {
-                    this.setState({
-                        aaa: "bbb"
-                    })
-                } else {
-                    this.setState({
-                        aaa: "aaa"
-                    })
-                }
-                this.setState({
-                    num: this.state.num + 1
-                })
-                this.setState({
-                    num: this.state.num + 1
-                })
-                var self = this
-                setTimeout(function() {
-                    self.setState({
-                        num: self.state.num + 1
-                    })
-                    self.setState({
-                        num: self.state.num + 1
-                    })
-                }, 0)
-                this.inputRef.focus()
-            }
-            click2() {
-                var equal = this.state.aaa === "aaa"
-                if (equal) {
-                    this.setState({
-                        aaa: "bbb"
-                    })
-                } else {
-                    this.setState({
-                        aaa: "aaa"
-                    })
-                }
-                this.setState({
-                    num: this.state.num + 2
-                })
-            }
-            callback = () => {
-                this.setState({
-                    num: this.state.num + 1
-                })
-            }
-            componentWillMount() {
-                console.log("App componentWillMount")
-                this.setState({
-                    num: this.state.num + 1
-                })
-            }
-            componentDidMount() {
-                console.log('App componentDidMount')
-                this.setState({
-                    num: this.state.num + 1
-                })
-                this.setState({
-                    num: this.state.num + 1
-                })
-            }
-            componentWillUpdate() {
-                console.log('App componentWillUpdate')
-            }
-            componentWillReceiveProps(nextProps) {
-                console.log("App componentWillReceiveProps")
-            }
-            componentDidUpdate(){
-                console.log('App componentDidUpdate')
-            }
             render() {
-                return(
+                let divs = []
+                for (let i = 0; i < 100000; i++) {
+                    divs.push(<div>{i}</div>)
+                }
+                return (
                     <div>
-                        <h2>{this.state.num}</h2>
-                        {this.state.aaa === 'aaa' ?  <Inner callback={this.callback} className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />}
-                        {/*<Inner callback={this.change.bind(this)} className={this.state.aaa}/>*/}
-                        {/*<button onClick={() => this.click()}>click</button>*/}
-                        <button style={ this.state.aaa === 'aaa' ? {} : {fontSize: "50px"}} onClick={() => this.click1()}>click</button>
-                        <input ref={this.inputRefFunc}/>
-                        {/*<A a={1}/>*/}
+                        {divs}
                     </div>
                 )
-             
             }
-        }
-
-        class Inner extends React.Component{
-             constructor(props){
-                super(props)
-                this.state = {
-                    innerP: "init",
-                    num: 0
-                }
-            }
-            componentWillMount(){
-                console.log('Inner componentWillMount')
-                this.setState({
-                    num: this.state.num + 1,
-                })
-            }
-            componentDidMount(){
-                console.log('Inner componentDidMount')
-                this.setState({
-                    num: this.state.num + 1,
-                })
-                // this.props.callback("bbb")
-            }
-            componentWillUpdate(){
-                console.log('Inner componentWillUpdate')
-            }
-            componentDidUpdate(){
-                console.log('Inner componentDidUpdate')
-            }
-            componentWillUnmount(){
-                console.log('Inner componentWillUnmount')
-            }
-            componentWillReceiveProps(nextProps) {
-                console.log("Inner componentWillReceiveProps")
-                // this.props.changeAppState("inner change")
-                this.setState({
-                    innerP: "change",
-                    num: this.state.num + 1
-                })
-            }
-            click1() {
-                this.props.callback()
-            }
-            render() {
-                return (
-                    <div className={this.props.className}>
-                        <p>xxx{111}</p><p>{this.state.num}</p>
-                        <button onClick={() => this.click1()}>click</button>
-                        {/*<Inner2/>*/}
-                    </div> 
-                )
-            }
-
-        }
-        class Inner2 extends React.Component{
-            constructor(props){
-                super(props)
-                this.state = {
-                    innerP: "init",
-                    num: 0,
-                }
-            }
-            componentWillMount(){
-                console.log('Inner2 componentWillMount')
-            }
-            componentDidMount(){
-                console.log('Inner2 componentDidMount')
-                this.setState({
-                    num: this.state.num + 1
-                })
-            }
-            componentWillUpdate(){
-                console.log('Inner2 componentWillUpdate')
-            }
-            componentWillUnmount(){
-                console.log('Inner2 componentWillUnmount')
-            }
-            componentWillReceiveProps(nextProps) {
-                console.log("Inner2 componentWillReceiveProps")
-                this.setState({
-                    innerP: "change",
-                })
-            }
-            render() {
-                return  <section className={this.props.className}><p>yyy</p><p>{this.state.innerP}</p><p>{this.state.num}</p></section>
-            }
-
         }
 
 var s 
 window.onload = function(){
+    // debugger
    s = ReactDOM.render( <App/>, document.getElementById('example'))
 }
 var input = document.querySelector("#inputChange")

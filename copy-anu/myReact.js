@@ -1,4 +1,5 @@
 // bug1: didMount/willMount 和 willReiceiveProps 的 setState 没有合并（已修复）
+// 坑1: context 变了，组件下所有元素都要 render 一遍
 
 /* ==========================================Component========================================== */
 function Component(props, context) {

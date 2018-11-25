@@ -1984,18 +1984,18 @@ function drainQueue(queue) {
         }
         updater._ref(); //执行组件虚拟DOM的ref
         //如果组件在componentDidMount中调用setState
-        // if (updater._renderInNextCycle) {
-        //     options.patchComponent(updater);
-        // }
+        if (updater._renderInNextCycle) {
+            options.patchComponent(updater);
+        }
     }
     // ??? +++
-    while (updater = queueCopy.pop()) {
-        debugger
-        if (updater._renderInNextCycle) {
-            options.patchComponent(updater)
-        }
-        updater._didHook()
-    }
+    // while (updater = queueCopy.pop()) {
+    //     debugger
+    //     if (updater._renderInNextCycle) {
+    //         options.patchComponent(updater)
+    //     }
+    //     updater._didHook()
+    // }
     //再执行所有setState/forceUpdate回调，根据从下到上的顺序执行
     needSort.sort(mountSorter).forEach(function (updater) {
         clearArray(updater._pendingCallbacks).forEach(function (fn) {
