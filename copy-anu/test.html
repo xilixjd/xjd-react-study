@@ -23,24 +23,24 @@
                 }
             }, 1000)
 
-            // setTimeout(function () {
-            //     function loop(n) {
-            //         var k = 0;
-            //         for (var i = 0; i < 100; i++) {
-            //             k += new Date - 0;
-            //             var el = document.createElement("div");
-            //             el.innerHTML = k;
-            //             root.appendChild(el);
-            //             el.style.cssText = `background:${randomHexColor()};height:40px`;
-            //         }
-            //         if (n) {
-            //             setTimeout(function () {
-            //                 loop(n - 1);
-            //             }, 40);
-            //         }
-            //     }
-            //     loop(100);
-            // }, 1000);
+            setTimeout(function () {
+                function loop(n) {
+                    var k = 0;
+                    for (var i = 0; i < 100; i++) {
+                        k += new Date - 0;
+                        var el = document.createElement("div");
+                        el.innerHTML = k;
+                        root.appendChild(el);
+                        el.style.cssText = `background:${randomHexColor()};height:40px`;
+                    }
+                    if (n) {
+                        setTimeout(function () {
+                            loop(n - 1);
+                        }, 40);
+                    }
+                }
+                loop(100);
+            }, 1000);
         </script>
     </body>
 </html>

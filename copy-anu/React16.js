@@ -2020,6 +2020,8 @@
         var topWork = fiber;
         outerLoop: while (fiber) {
             if (fiber.disposed || deadline.timeRemaining() <= ENOUGH_TIME) {
+                // macrotasks.push(fiber)
+                debugger
                 break;
             }
             var occurError = void 0;
@@ -2669,9 +2671,10 @@
             return 2;
         }
     };
-    function requestIdleCallback(fn) {
-        fn(deadline);
-    }
+    // +++
+    // function requestIdleCallback(fn) {
+    //     fn(deadline);
+    // }
     Renderer.scheduleWork = function () {
         performWork(deadline);
     };
@@ -2713,6 +2716,7 @@
             updateCommitQueue(fiber);
             resetStack(info);
             if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
+                debugger
                 workLoop(deadline);
             } else {
                 commitDFS(effects);

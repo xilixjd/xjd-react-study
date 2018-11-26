@@ -19,8 +19,8 @@
 <!--<script type='text/javascript' src="./test/react-lite.js"></script>-->
 <!--<script type='text/javascript' src="./dist/devtools.js"></script>-->
 
-<script src="./myReact.js"></script>
-<!-- <script src="./React16.js"></script> -->
+<!-- <script src="./myReact.js"></script> -->
+<script src="./React16.js"></script>
 <!-- <script src="./React.js"></script> -->
 <!-- <script src="./ReactBefore16.js"></script> -->
  <!-- <script src="./dist/react-dom.js"></script> -->
@@ -65,14 +65,14 @@
         //             num: this.state.num + 1
         //         })
         //         var self = this
-        //         setTimeout(function() {
-        //             self.setState({
-        //                 num: self.state.num + 1
-        //             })
-        //             self.setState({
-        //                 num: self.state.num + 1
-        //             })
-        //         }, 0)
+        //         // setTimeout(function() {
+        //         //     self.setState({
+        //         //         num: self.state.num + 1
+        //         //     })
+        //         //     self.setState({
+        //         //         num: self.state.num + 1
+        //         //     })
+        //         // }, 0)
         //         this.inputRef.focus()
         //     }
         //     click2() {
@@ -200,9 +200,9 @@
         //     }
         //     componentDidMount(){
         //         console.log('Inner2 componentDidMount')
-        //         this.setState({
-        //             num: this.state.num + 1
-        //         })
+        //         // this.setState({
+        //         //     num: this.state.num + 1
+        //         // })
         //     }
         //     componentWillUpdate(){
         //         console.log('Inner2 componentWillUpdate')
@@ -212,9 +212,9 @@
         //     }
         //     componentWillReceiveProps(nextProps) {
         //         console.log("Inner2 componentWillReceiveProps")
-        //         this.setState({
-        //             innerP: "change",
-        //         })
+        //         // this.setState({
+        //         //     innerP: "change",
+        //         // })
         //     }
         //     render() {
         //         return  <section className={this.props.className}><p>yyy</p><p>{this.state.innerP}</p><p>{this.state.num}</p></section>
@@ -223,14 +223,14 @@
         // }
 
         class App extends React.Component {
-            render(){
-                let array = []
+            render() {
+                let divs = []
                 for (let i = 0; i < 100000; i++) {
-                    array.push(<div>{i}</div>)
+                    divs.push(<div>{i}</div>)
                 }
                 return (
                     <div>
-                        {array}
+                        {divs}
                     </div>
                 )
             }
@@ -238,6 +238,7 @@
 
 var s 
 window.onload = function(){
+    // debugger
    s = ReactDOM.render( <App/>, document.getElementById('example'))
 }
 var input = document.querySelector("#inputChange")
