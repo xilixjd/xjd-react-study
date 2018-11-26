@@ -92,11 +92,10 @@
             superClass.apply(this, arguments);
             ctor.apply(this, arguments);
         };
-        debugger
         Ctor.displayName = className;
         var proto = inherit(Ctor, superClass);
-        extend(proto, methods); // //继承父类的静态成员
-        extend(Ctor, superClass);
+        extend(proto, methods);
+        extend(Ctor, superClass); //继承父类的静态成员
         if (statics) {
             extend(Ctor, statics);
         }
@@ -2236,8 +2235,10 @@
         var updateQueue = fiber.updateQueue;
         mergeStates(fiber, newProps);
         newState = fiber.memoizedState;
+        // 合并 getDerivedStateFromProps 的 state
         setStateByProps(instance, fiber, newProps, newState);
         newState = fiber.memoizedState;
+        // ??? setout
         delete fiber.setout;
         fiber._hydrating = true;
         if (!propsChanged && newState === oldState && contextStack.length == 1 && !updateQueue.isForced) {
@@ -2672,9 +2673,9 @@
         }
     };
     // +++
-    // function requestIdleCallback(fn) {
-    //     fn(deadline);
-    // }
+    function requestIdleCallback(fn) {
+        fn(deadline);
+    }
     Renderer.scheduleWork = function () {
         performWork(deadline);
     };
@@ -2806,10 +2807,13 @@
         var microtasks = getQueue(fiber);
         state = isForced ? null : sn === 5 || sn === 8 ? state : null;
         if (fiber.setout) {
+            // cWM/cWRP中setState， 不放进列队
             immediateUpdate = false;
         } else if (isBatching && !immediateUpdate || fiber._hydrating) {
+            // 事件回调，batchedUpdates, 错误边界, cDM/cDU中setState
             pushChildQueue(fiber, batchedtasks);
         } else {
+            // 情况4，在钩子外setState或batchedUpdates中ReactDOM.render一棵新树
             immediateUpdate = immediateUpdate || !fiber._hydrating;
             pushChildQueue(fiber, microtasks);
         }
