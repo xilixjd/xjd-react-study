@@ -92,9 +92,10 @@
             superClass.apply(this, arguments);
             ctor.apply(this, arguments);
         };
+        debugger
         Ctor.displayName = className;
         var proto = inherit(Ctor, superClass);
-        extend(proto, methods);
+        extend(proto, methods); // //继承父类的静态成员
         extend(Ctor, superClass);
         if (statics) {
             extend(Ctor, statics);
