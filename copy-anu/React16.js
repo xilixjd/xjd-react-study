@@ -3,6 +3,8 @@
  * IE9+
  */
 
+ // 1、对于文本节点 insertElement 和 updateContent 有点重复
+
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
@@ -1456,17 +1458,17 @@
         SyntheticEvent: SyntheticEvent
     };
 
-    var NOWORK = 1;
-    var WORKING = 2;
-    var PLACE = 3;
-    var CONTENT = 5;
-    var ATTR = 7;
-    var DUPLEX = 11;
-    var DETACH = 13;
-    var HOOK = 17;
-    var REF = 19;
-    var CALLBACK = 23;
-    var CAPTURE = 29;
+    var NOWORK = 1; //用于叠加其他任务
+    var WORKING = 2; //决定程序是否继续往下遍历
+    var PLACE = 3; //插入或移动
+    var CONTENT = 5; //设置文本
+    var ATTR = 7; //更新属性
+    var DUPLEX = 11; //更新受控属性
+    var DETACH = 13; //移出DOM树 componentWillUnmount
+    var HOOK = 17; //componentDidMount/Update/
+    var REF = 19; // ref 总在钩子之后
+    var CALLBACK = 23; //回调
+    var CAPTURE = 29; //出错
     var effectNames = [DUPLEX, HOOK, REF, DETACH, CALLBACK, CAPTURE].sort(function (a, b) {
         return a - b;
     });
@@ -2082,6 +2084,7 @@
             fiber.stateNode = Renderer.createElement(fiber);
         }
         var parent = fiber.parent;
+        // ???
         fiber.forwardFiber = parent.insertPoint;
         parent.insertPoint = fiber;
         fiber.effectTag = PLACE;
@@ -2316,6 +2319,8 @@
         }
         return context;
     }
+    // 不仅要 diff 还要把 children 转换为 fiber，且建立父级与子 fiber 的联系
+    // 且建立兄弟之间的联系
     function diffChildren(parentFiber, children) {
         var oldFibers = parentFiber.children;
         if (oldFibers) {
@@ -2665,7 +2670,7 @@
             requestIdleCallback(performWork);
         }
     }
-    var ENOUGH_TIME = 1;
+    var ENOUGH_TIME = 0;
     var deadline = {
         didTimeout: false,
         timeRemaining: function timeRemaining() {
@@ -2673,11 +2678,12 @@
         }
     };
     // +++
-    function requestIdleCallback(fn) {
-        fn(deadline);
-    }
+    // function requestIdleCallback(fn) {
+    //     fn(deadline);
+    // }
     Renderer.scheduleWork = function () {
-        performWork(deadline);
+        // performWork(deadline);
+        requestIdleCallback(performWork)
     };
     var isBatching = false;
     Renderer.batchedUpdates = function (callback, event) {
@@ -2765,6 +2771,7 @@
             fiber = fiber.return;
         }
     }
+    // ???
     function pushChildQueue(fiber, queue) {
         var maps = {};
         for (var i = queue.length, el; el = queue[--i];) {
@@ -2961,9 +2968,13 @@
             var insertPoint = fiber.forwardFiber ? fiber.forwardFiber.stateNode : null;
             var after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
             if (after == dom) {
+                // 没找到场景
+                // debugger
                 return;
             }
             if (after === null && dom === parent.lastChild) {
+                // 没找到场景
+                debugger
                 return;
             }
             Renderer.inserting = fiber.tag === 5 && safeActiveElement();
