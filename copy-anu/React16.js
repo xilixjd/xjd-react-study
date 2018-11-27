@@ -2670,7 +2670,7 @@
             requestIdleCallback(performWork);
         }
     }
-    var ENOUGH_TIME = 0;
+    var ENOUGH_TIME = 1;
     var deadline = {
         didTimeout: false,
         timeRemaining: function timeRemaining() {
@@ -2678,12 +2678,12 @@
         }
     };
     // +++
-    // function requestIdleCallback(fn) {
-    //     fn(deadline);
-    // }
+    function requestIdleCallback(fn) {
+        fn(deadline);
+    }
     Renderer.scheduleWork = function () {
-        // performWork(deadline);
-        requestIdleCallback(performWork)
+        performWork(deadline);
+        // requestIdleCallback(performWork)
     };
     var isBatching = false;
     Renderer.batchedUpdates = function (callback, event) {
@@ -2772,6 +2772,7 @@
         }
     }
     // ???
+    // queue -> batchedtasks
     function pushChildQueue(fiber, queue) {
         var maps = {};
         for (var i = queue.length, el; el = queue[--i];) {
