@@ -36,6 +36,7 @@
                 this.state = {
                     aaa: 'aaa',
                     num: 0,
+                    error: false,
                 }
                 this.inputRef = null
                 this.inputRefFunc = (element) => {
@@ -94,6 +95,7 @@
                 this.setState({
                     num: this.state.num + 1
                 })
+                debugger
             }
             componentWillMount() {
                 console.log("App componentWillMount")
@@ -119,9 +121,15 @@
             componentDidUpdate(){
                 console.log('App componentDidUpdate')
             }
+            componentDidCatch(a, b) {
+                console.log(a, b)
+                console.log("App componentDidCatch")
+                this.setState({ error: true })
+            }
             render() {
                 return(
                     <div>
+                        {this.state.error ? <h2>error</h2> : <h2>no error</h2>}
                         <h2>{this.state.num}</h2>
                         {this.state.aaa === 'aaa' ?  <Inner callback={this.callback} className={this.state.aaa} /> : <Inner2 className={this.state.aaa} />}
                         {/*<Inner callback={this.change.bind(this)} className={this.state.aaa}/>*/}
@@ -154,7 +162,7 @@
                 this.setState({
                     num: this.state.num + 1,
                 })
-                // this.props.callback("bbb")
+                this.props.callback("bbb")
             }
             componentWillUpdate(){
                 console.log('Inner componentWillUpdate')
@@ -177,6 +185,7 @@
                 this.props.callback()
             }
             render() {
+                // throw new Error("error")
                 return (
                     <div className={this.props.className}>
                         <p>xxx{111}</p><p>{this.state.num}</p>
@@ -238,7 +247,6 @@
 
 var s 
 window.onload = function(){
-    debugger
    s = ReactDOM.render( <App/>, document.getElementById('example'))
 }
 var input = document.querySelector("#inputChange")

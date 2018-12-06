@@ -1921,6 +1921,8 @@
                         boundary.catchError = true;
                     }
                     if (retry) {
+                        // ???
+                        debugger
                         var arr = boundary.effects || (boundary.effects = []);
                         arr.push(retry);
                     }
@@ -2021,8 +2023,6 @@
         var topWork = fiber;
         outerLoop: while (fiber) {
             if (fiber.disposed || deadline.timeRemaining() <= ENOUGH_TIME) {
-                // macrotasks.push(fiber)
-                debugger
                 break;
             }
             var occurError = void 0;
@@ -2342,6 +2342,7 @@
                 }
                 continue;
             }
+            // 卸载 fiber
             detachFiber(oldFiber, effects$$1);
         }
         var prevFiber = void 0,
@@ -2723,7 +2724,6 @@
             updateCommitQueue(fiber);
             resetStack(info);
             if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
-                debugger
                 workLoop(deadline);
             } else {
                 commitDFS(effects);
@@ -2783,6 +2783,8 @@
                 queue.splice(i, 1);
                 continue;
             }
+            // ??? 场景？
+            debugger
             maps[el.stateNode.updater.mountOrder] = true;
         }
         var enqueue = true,
@@ -2795,18 +2797,22 @@
                 hackSCU.push(p);
                 var u = instance.updater;
                 if (maps[u.mountOrder]) {
+                    debugger
                     enqueue = false;
                     break;
                 }
             }
         }
         hackSCU.forEach(function (el) {
+            // 如果是批量更新，必须强制更新，防止进入SCU
             el.updateQueue.batching = true;
         });
         if (enqueue) {
             queue.push(fiber);
         }
     }
+
+    // enqueueSetState
     function updateComponent(instance, state, callback, immediateUpdate) {
         var fiber = get(instance);
         fiber.dirty = true;
@@ -2823,6 +2829,7 @@
         } else {
             // 情况4，在钩子外setState或batchedUpdates中ReactDOM.render一棵新树
             immediateUpdate = immediateUpdate || !fiber._hydrating;
+            // ??? microtasks 不可能有值？
             pushChildQueue(fiber, microtasks);
         }
         mergeUpdates(fiber, state, isForced, callback);
