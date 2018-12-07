@@ -2658,6 +2658,7 @@
         if (boundaries.length) {
             macrotasks.unshift.apply(macrotasks, boundaries);
             boundaries.length = 0;
+            debugger
         }
         topFibers.forEach(function (el) {
             var microtasks = el.microtasks;
@@ -2797,6 +2798,7 @@
                 hackSCU.push(p);
                 var u = instance.updater;
                 if (maps[u.mountOrder]) {
+                    // ???
                     debugger
                     enqueue = false;
                     break;
