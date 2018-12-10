@@ -2723,6 +2723,7 @@
             }
             reconcileDFS(fiber, info, deadline, ENOUGH_TIME);
             updateCommitQueue(fiber);
+            // ???
             resetStack(info);
             if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
                 workLoop(deadline);
