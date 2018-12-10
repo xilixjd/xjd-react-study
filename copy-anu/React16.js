@@ -4,6 +4,10 @@
  */
 
  // 1、对于文本节点 insertElement 和 updateContent 有点重复
+ // 2、为什么要用深度优先遍历？
+ // (1)因为深度优先才能在渲染、更新节点的时候先渲染最底层的节点
+ // (2)context
+ // 3、没搞懂 alternate 怎么踩错误，然后更新之前组件没错，正常渲染，更新之后，组件出错，还可以保留之前正常渲染的节点
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -429,6 +433,7 @@
             });
             return subtreeCount;
         }
+        // ??? 看起来是 children 还有可能是 Symbol 的 iterator 对象
         var iteratorFn = getIteractor(children);
         if (iteratorFn) {
             var iterator = iteratorFn.call(children),
@@ -2186,6 +2191,7 @@
                 fiber.parent.insertPoint = getInsertPoint(fiber);
             }
             if (fiber.updateFail) {
+                // ???
                 cloneChildren(fiber);
                 fiber._hydrating = false;
                 return;
@@ -2276,6 +2282,7 @@
         }
     }
     function cloneChildren(fiber) {
+        // ???
         var prev = fiber.alternate;
         if (prev && prev.child) {
             var pc = prev.children;
@@ -2291,6 +2298,9 @@
         }
     }
     function cacheContext(instance, unmaskedContext, context) {
+        // __unmaskedContext 从最上层传下来的 context
+        // __maskedContext 遇到一个有contextTypes的组件，context就抽取一部分内容给这个组件进行实例化。
+        // 这个只有部分内容的context，我们称之为maskedContext
         instance.__unmaskedContext = unmaskedContext;
         instance.__maskedContext = context;
     }
@@ -2363,6 +2373,7 @@
                         delete _newFiber.deleteRef;
                     }
                     if (oldRef && oldRef !== _newFiber.ref) {
+                        // ???
                         effects$$1.push(alternate);
                     }
                     if (_newFiber.tag === 5) {
@@ -2832,6 +2843,7 @@
             // 情况4，在钩子外setState或batchedUpdates中ReactDOM.render一棵新树
             immediateUpdate = immediateUpdate || !fiber._hydrating;
             // ??? microtasks 不可能有值？
+            // 为什么要存进 microtasks 而不是 macrotasks 呢
             pushChildQueue(fiber, microtasks);
         }
         mergeUpdates(fiber, state, isForced, callback);
@@ -2978,8 +2990,6 @@
             var insertPoint = fiber.forwardFiber ? fiber.forwardFiber.stateNode : null;
             var after = insertPoint ? insertPoint.nextSibling : parent.firstChild;
             if (after == dom) {
-                // 没找到场景
-                // debugger
                 return;
             }
             if (after === null && dom === parent.lastChild) {

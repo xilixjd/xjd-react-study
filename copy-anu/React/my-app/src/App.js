@@ -2,6 +2,20 @@
 import React, { Component } from 'react';
 import './App.css';
 
+// class App extends React.Component {
+//   render() {
+//       let divs = []
+//       for (let i = 0; i < 100000; i++) {
+//           divs.push(<div>{i}</div>)
+//       }
+//       return (
+//           <div>
+//               {divs}
+//           </div>
+//       )
+//   }
+// }
+
 let A = (props) => <div>{props.a}</div>
         class App extends React.Component {
             constructor(props) {
