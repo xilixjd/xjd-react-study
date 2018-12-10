@@ -111,10 +111,10 @@
                     num: this.state.num + 1
                 })
             }
-            shouldComponentUpdate() {
-                console.log("App shouldComponentUpdate")
-                // return false
-            }
+            // shouldComponentUpdate() {
+            //     console.log("App shouldComponentUpdate")
+            //     return false
+            // }
             componentWillUpdate() {
                 console.log('App componentWillUpdate')
             }
@@ -170,10 +170,10 @@
                 })
                 this.props.callback("bbb")
             }
-            shouldComponentUpdate() {
-                console.log("Inner shouldComponentUpdate")
-                return false
-            }
+            // shouldComponentUpdate() {
+            //     console.log("Inner shouldComponentUpdate")
+            //     return false
+            // }
             componentWillUpdate(){
                 console.log('Inner componentWillUpdate')
             }

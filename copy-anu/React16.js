@@ -8,6 +8,7 @@
  // (1)因为深度优先才能在渲染、更新节点的时候先渲染最底层的节点
  // (2)context
  // 3、没搞懂 alternate 怎么踩错误，然后更新之前组件没错，正常渲染，更新之后，组件出错，还可以保留之前正常渲染的节点
+ // 4、insertPoint 没搞懂
 
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
