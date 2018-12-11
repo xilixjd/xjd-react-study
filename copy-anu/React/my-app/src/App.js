@@ -53,14 +53,14 @@ let A = (props) => <div>{props.a}</div>
                     num: this.state.num + 1
                 })
                 var self = this
-                // setTimeout(function() {
-                //     self.setState({
-                //         num: self.state.num + 1
-                //     })
-                //     self.setState({
-                //         num: self.state.num + 1
-                //     })
-                // }, 0)
+                setTimeout(function() {
+                    self.setState({
+                        num: self.state.num + 1
+                    })
+                    // self.setState({
+                    //     num: self.state.num + 1
+                    // })
+                }, 0)
                 this.inputRef.focus()
             }
             click2() {
@@ -98,6 +98,10 @@ let A = (props) => <div>{props.a}</div>
                     num: this.state.num + 1
                 })
             }
+            // shouldComponentUpdate() {
+            //     console.log("App shouldComponentUpdate")
+            //     return false
+            // }
             componentWillUpdate() {
                 console.log('App componentWillUpdate')
             }
@@ -112,6 +116,9 @@ let A = (props) => <div>{props.a}</div>
                 console.log("App componentDidCatch")
                 this.setState({ error: true })
             }
+            componentWillUnmount(){
+                console.log('App componentWillUnmount')
+            }
             render() {
                 return(
                     <div>
@@ -125,7 +132,7 @@ let A = (props) => <div>{props.a}</div>
                         {<A a={1}/>}
                     </div>
                 )
-             
+            
             }
         }
 
@@ -134,7 +141,8 @@ let A = (props) => <div>{props.a}</div>
                 super(props)
                 this.state = {
                     innerP: "init",
-                    num: 0
+                    num: 0,
+                    error: false,
                 }
             }
             componentWillMount(){
@@ -150,6 +158,10 @@ let A = (props) => <div>{props.a}</div>
                 })
                 this.props.callback("bbb")
             }
+            // shouldComponentUpdate() {
+            //     console.log("Inner shouldComponentUpdate")
+            //     return false
+            // }
             componentWillUpdate(){
                 console.log('Inner componentWillUpdate')
             }
@@ -167,23 +179,30 @@ let A = (props) => <div>{props.a}</div>
                     num: this.state.num + 1
                 })
             }
+            componentDidCatch(a, b) {
+                console.log(a, b)
+                console.log("Inner componentDidCatch")
+                this.setState({ error: true })
+            }
             click1() {
                 this.props.callback()
             }
             render() {
+                console.log(this.props.className)
                 if (this.state.num === 3) {
                     throw new Error("error")
                 }
                 return (
                     <div className={this.props.className}>
+                        {this.state.error ? <h2>error</h2> : <h2>no error</h2>}
                         <p>xxx{111}</p><p>{this.state.num}</p>
                         <button onClick={() => this.click1()}>click</button>
-                        {/*<Inner2/>*/}
+                        {<Inner2/>}
                     </div> 
                 )
             }
-
         }
+
         class Inner2 extends React.Component{
             constructor(props){
                 super(props)
@@ -213,8 +232,16 @@ let A = (props) => <div>{props.a}</div>
                 //     innerP: "change",
                 // })
             }
+            click1() {
+                this.setState({
+                    num: this.state.num + 1
+                })
+            }
             render() {
-                return  <section className={this.props.className}><p>yyy</p><p>{this.state.innerP}</p><p>{this.state.num}</p></section>
+                if (this.state.num === 1) {
+                    throw new Error("error")
+                }
+                return  <section className={this.props.className}><button onClick={() => this.click1()}>click</button><p>yyy</p><p>{this.state.innerP}</p><p>{this.state.num}</p></section>
             }
 
         }
