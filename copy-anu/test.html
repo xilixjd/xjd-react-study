@@ -14,7 +14,7 @@
             setTimeout(function() {
                 var k = 0;
                 var root = document.getElementById("root");
-                for(var i = 0; i < 10000; i++){
+                for(var i = 0; i < 100000; i++){
                     k += new Date - 0 ;
                     var el = document.createElement("div");
                     el.innerHTML = k;
@@ -39,7 +39,7 @@
                         }, 40);
                     }
                 }
-                loop(100);
+                loop(1000);
             }, 1000);
         </script>
     </body>
