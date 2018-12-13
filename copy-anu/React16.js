@@ -1910,6 +1910,9 @@
                     var effectTag = boundary.effectTag;
                     var f = boundary.alternate;
                     if (f && !f.catchError) {
+                        if (!Object.keys(f.children).length) {
+                            f.children = boundary.children
+                        }
                         f.forward = boundary.forward;
                         f.sibling = boundary.sibling;
                         if (boundary.return.child == boundary) {
@@ -2356,6 +2359,9 @@
             // 卸载 fiber
             detachFiber(oldFiber, effects$$1);
         }
+        if (parentFiber.name === "Inner") {
+            debugger
+        }
         var prevFiber = void 0,
             index = 0;
         for (var _i in newFibers) {
@@ -2740,6 +2746,7 @@
             if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
                 workLoop(deadline);
             } else {
+                var effectsCopy = [...effects]
                 commitDFS(effects);
             }
         }
