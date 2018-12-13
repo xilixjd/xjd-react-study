@@ -2359,9 +2359,6 @@
             // 卸载 fiber
             detachFiber(oldFiber, effects$$1);
         }
-        if (parentFiber.name === "Inner") {
-            debugger
-        }
         var prevFiber = void 0,
             index = 0;
         for (var _i in newFibers) {
