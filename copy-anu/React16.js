@@ -1910,11 +1910,15 @@
                     var effectTag = boundary.effectTag;
                     var f = boundary.alternate;
                     if (f && !f.catchError) {
+                        // if (!Object.keys(f.children).length) {
+                        //     f.children = boundary.children
+                        // }
                         f.forward = boundary.forward;
                         f.sibling = boundary.sibling;
                         if (boundary.return.child == boundary) {
                             boundary.return.child = f;
                         }
+                        boundariesCopy.push(boundary)
                         boundary = f;
                     }
                     if (!boundary.catchError) {
@@ -2508,6 +2512,12 @@
                     domRemoved.length = 0;
                 }
             }
+            // +++
+            boundariesCopy.forEach(function(f) {
+                if (!f.alternate) return
+                f.alternate = new Fiber(f)
+            })
+            boundariesCopy.length = 0
         }, {});
         var error = Renderer.catchError;
         if (error) {
@@ -2631,6 +2641,7 @@
 
     var macrotasks = Renderer.macrotasks;
     var boundaries = Renderer.boundaries;
+    var boundariesCopy = [];
     var batchedtasks = [];
     function render(vnode, root, callback) {
         var container = createContainer(root),
@@ -2740,6 +2751,7 @@
             if (macrotasks.length && deadline.timeRemaining() > ENOUGH_TIME) {
                 workLoop(deadline);
             } else {
+                var effectsCopy = [...effects]
                 commitDFS(effects);
             }
         }
