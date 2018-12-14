@@ -1910,6 +1910,7 @@
                     var effectTag = boundary.effectTag;
                     var f = boundary.alternate;
                     if (f && !f.catchError) {
+                        // +++
                         // if (!Object.keys(f.children).length) {
                         //     f.children = boundary.children
                         // }
@@ -1918,6 +1919,7 @@
                         if (boundary.return.child == boundary) {
                             boundary.return.child = f;
                         }
+                        // +++
                         boundariesCopy.push(boundary)
                         boundary = f;
                     }
@@ -2702,7 +2704,6 @@
             return 2;
         }
     };
-    // +++
     function requestIdleCallback(fn) {
         fn(deadline);
     }
