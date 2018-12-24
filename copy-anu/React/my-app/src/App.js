@@ -188,7 +188,6 @@ let A = (props) => <div>{props.a}</div>
                 this.props.callback()
             }
             render() {
-                console.log(this.props.className)
                 if (this.state.num === 3) {
                     throw new Error("error")
                 }
