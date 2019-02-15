@@ -19365,6 +19365,7 @@ function completeRoot(root, finishedWork, expirationTime) {
     nestedUpdateCount = 0;
   }
   commitRoot(root, finishedWork);
+  console.log("done")
 }
 
 function onUncaughtError(error) {
