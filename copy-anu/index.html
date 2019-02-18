@@ -272,68 +272,94 @@
         class App extends React.Component {
             constructor(props) {
                 super(props);
-                this.onChange = this.onChange.bind(this);
+                this.onChange1 = this.onChange1.bind(this);
+                this.onChange2 = this.onChange2.bind(this);
                 let divs1 = [];
                 let divs2 = [];
                 this.state = {
-                inputValue: "",
+                inputValue1: "",
+                inputValue2: "",
                 nums: 0,
                 divs1,
                 divs2
                 };
             }
 
+            // componentWillMount() {
+            //     this.setState({
+            //         nums: this.state.nums + 1
+            //     })
+            // }
+
+            // shouldComponentUpdate() {
+            //     return false
+            // }
+
             componentDidMount() {
-                setTimeout(() => {
-                    let divs2 = [];
-                    for (let i = 0; i < 10000; i++) {
-                        divs2.push(
-                        <div style={{ background: this.randomHexColor() }} key={i}>
-                        1222
-                        </div>
-                    );
-                    }
+                // setTimeout(() => {
                     this.setState({
-                        divs2
+                        nums: this.state.nums + 1
                     })
-                }, 2000)
+                    this.setState({
+                        nums: this.state.nums + 1
+                    })
+                    this.setState({
+                        nums: this.state.nums + 1
+                    })
+                // }, 0)
             }
 
-            onChange(e) {
-                const inputValue = e.target.value;
+            onChange1(e) {
+                const inputValue1 = e.target.value;
                 // debugger
                 React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.Scheduler.unstable_scheduleCallback(() => {
                     // debugger
                     this.setState({
-                        inputValue
+                        inputValue1
                     });
-                })
+                }, {timeout:3})
+                // this.setState({
+                //     nums: this.state.nums+1
+                // })
             }
-
-            randomHexColor() {
-                return (
-                "#" +
-                ("0000" + ((Math.random() * 0x1000000) << 0).toString(16)).substr(-6)
-                );
+            onChange2(e) {
+                const inputValue2 = e.target.value;
+                // debugger
+                React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.Scheduler.unstable_scheduleCallback(() => {
+                    // debugger
+                    this.setState({
+                        inputValue2
+                    });
+                }, {timeout:10})
             }
 
             render() {
                 let divs1 = [];
-                let inputValue = this.state.inputValue;
+                let inputValue1 = this.state.inputValue1;
                 for (let i = 0; i < 10000; i++) {
                 divs1.push(
-                    <div style={{ background: this.randomHexColor() }} key={i}>
-                    {inputValue}
+                    <div  key={i}>
+                    {inputValue1}
+                    </div>
+                );
+                }
+                let divs2 = [];
+                let inputValue2 = this.state.inputValue2;
+                for (let i = 0; i < 20000; i++) {
+                divs2.push(
+                    <div  key={i}>
+                    {inputValue2}
                     </div>
                 );
                 }
                 return (
                 <div>
-                    <input onChange={this.onChange} value={this.state.inputValue} />
+                    <input onChange={this.onChange1} value={this.state.inputValue1} />
+                    <input onChange={this.onChange2} value={this.state.inputValue2} />
                     <div>{this.state.nums}</div>
                     <div className="div-two">
                         <div>{divs1}</div>
-                        <div>{this.state.divs2}</div>
+                        <div>{divs2}</div>
                     </div>
                 </div>
                 );
