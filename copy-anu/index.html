@@ -297,40 +297,37 @@
 
             componentDidMount() {
                 // setTimeout(() => {
-                    this.setState({
-                        nums: this.state.nums + 1
-                    })
-                    this.setState({
-                        nums: this.state.nums + 1
-                    })
-                    this.setState({
-                        nums: this.state.nums + 1
-                    })
+                    // this.setState({
+                    //     nums: this.state.nums + 1
+                    // })
+                    // this.setState({
+                    //     nums: this.state.nums + 1
+                    // })
+                    // this.setState({
+                    //     nums: this.state.nums + 1
+                    // })
                 // }, 0)
             }
 
             onChange1(e) {
                 const inputValue1 = e.target.value;
-                // debugger
                 React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.Scheduler.unstable_scheduleCallback(() => {
-                    // debugger
                     this.setState({
                         inputValue1
                     });
-                }, {timeout:3})
+                }, {timeout:6000})
                 // this.setState({
                 //     nums: this.state.nums+1
                 // })
             }
             onChange2(e) {
+                console.log("onchange")
                 const inputValue2 = e.target.value;
-                // debugger
                 React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.Scheduler.unstable_scheduleCallback(() => {
-                    // debugger
                     this.setState({
                         inputValue2
                     });
-                }, {timeout:10})
+                }, {timeout:3000})
             }
 
             render() {
