@@ -115,12 +115,12 @@
         //     }
         //     componentDidMount() {
         //         console.log('App componentDidMount')
-        //         this.setState({
-        //             num: this.state.num + 1
-        //         })
-        //         this.setState({
-        //             num: this.state.num + 1
-        //         })
+        //         // this.setState({
+        //         //     num: this.state.num + 1
+        //         // })
+        //         // this.setState({
+        //         //     num: this.state.num + 1
+        //         // })
         //     }
         //     // shouldComponentUpdate() {
         //     //     console.log("App shouldComponentUpdate")
@@ -180,7 +180,7 @@
         //         this.setState({
         //             num: this.state.num + 1,
         //         })
-        //         this.props.callback("bbb")
+        //         // this.props.callback("bbb")
         //     }
         //     // shouldComponentUpdate() {
         //     //     console.log("Inner shouldComponentUpdate")
@@ -209,17 +209,20 @@
         //         this.setState({ error: true })
         //     }
         //     click1() {
+        //         this.setState({
+        //             num: this.state.num + 1
+        //         })
         //         this.props.callback()
         //     }
         //     render() {
-        //         if (this.state.num === 3) {
+        //         if (this.state.num === 4) {
         //             throw new Error("error")
         //         }
         //         return (
         //             <div className={this.props.className}>
         //                 {this.state.error ? <h2>error</h2> : <h2>no error</h2>}
         //                 <p>xxx{111}</p><p>{this.state.num}</p>
-        //                 <button onClick={() => this.click1()}>click</button>
+        //                 <button onClick={() => this.click1()}>click1</button>
         //                 {<Inner2/>}
         //             </div> 
         //         )
@@ -272,9 +275,9 @@
         class App extends React.Component {
             constructor(props) {
                 super(props);
-                this.onChange1 = this.onChange1.bind(this);
-                this.onChange2 = this.onChange2.bind(this);
-                let divs1 = [];
+                // this.onChange1 = this.onChange1.bind(this);
+                // this.onChange2 = this.onChange2.bind(this);
+                let divs1 = [{k:1, v:1}, {k:2, v:2}, {k:3, v:3}];
                 let divs2 = [];
                 this.state = {
                 inputValue1: "",
@@ -285,90 +288,106 @@
                 };
             }
 
-            // componentWillMount() {
-            //     this.setState({
-            //         nums: this.state.nums + 1
-            //     })
+            // // componentWillMount() {
+            // //     this.setState({
+            // //         nums: this.state.nums + 1
+            // //     })
+            // // }
+
+            // // shouldComponentUpdate() {
+            // //     return false
+            // // }
+
+            // componentDidMount() {
+            //     // setTimeout(() => {
+            //         // this.setState({
+            //         //     nums: this.state.nums + 1
+            //         // })
+            //         // this.setState({
+            //         //     nums: this.state.nums + 1
+            //         // })
+            //         // this.setState({
+            //         //     nums: this.state.nums + 1
+            //         // })
+            //     // }, 0)
             // }
 
-            // shouldComponentUpdate() {
-            //     return false
+            // onChange1(e) {
+            //     const inputValue1 = e.target.value;
+            //     React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.Scheduler.unstable_scheduleCallback(() => {
+            //         this.setState({
+            //             inputValue1
+            //         });
+            //     }, {timeout:6000})
+            //     // this.setState({
+            //     //     nums: this.state.nums+1
+            //     // })
+            // }
+            // onChange2(e) {
+            //     console.log("onchange")
+            //     const inputValue2 = e.target.value;
+            //     React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.Scheduler.unstable_scheduleCallback(() => {
+            //         this.setState({
+            //             inputValue2
+            //         });
+            //     }, {timeout:30000})
             // }
 
-            componentDidMount() {
-                // setTimeout(() => {
-                    // this.setState({
-                    //     nums: this.state.nums + 1
-                    // })
-                    // this.setState({
-                    //     nums: this.state.nums + 1
-                    // })
-                    // this.setState({
-                    //     nums: this.state.nums + 1
-                    // })
-                // }, 0)
-            }
+            // render() {
+            //     let divs1 = [];
+            //     let inputValue1 = this.state.inputValue1;
+            //     for (let i = 0; i < 10000; i++) {
+            //     divs1.push(
+            //         <div  key={i}>
+            //         {inputValue1}
+            //         </div>
+            //     );
+            //     }
+            //     let divs2 = [];
+            //     let inputValue2 = this.state.inputValue2;
+            //     for (let i = 0; i < 20000; i++) {
+            //     divs2.push(
+            //         <div  key={i}>
+            //         {inputValue2}
+            //         </div>
+            //     );
+            //     }
+            //     return (
+            //     <div>
+            //         <input onChange={this.onChange1} value={this.state.inputValue1} />
+            //         <input onChange={this.onChange2} value={this.state.inputValue2} />
+            //         <div>{this.state.nums}</div>
+            //         <div className="div-two">
+            //             <div>{divs1}</div>
+            //             <div>{divs2}</div>
+            //         </div>
+            //     </div>
+            //     );
+            // }
 
-            onChange1(e) {
-                const inputValue1 = e.target.value;
-                React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.Scheduler.unstable_scheduleCallback(() => {
-                    this.setState({
-                        inputValue1
-                    });
-                }, {timeout:6000})
-                // this.setState({
-                //     nums: this.state.nums+1
-                // })
+            click() {
+                this.setState({
+                    divs1: [{k:1, v:2}, {k:4, v:4}, {k:3, v:3}]
+                })
             }
-            onChange2(e) {
-                console.log("onchange")
-                const inputValue2 = e.target.value;
-                React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.Scheduler.unstable_scheduleCallback(() => {
-                    this.setState({
-                        inputValue2
-                    });
-                }, {timeout:3000})
-            }
-
             render() {
-                let divs1 = [];
-                let inputValue1 = this.state.inputValue1;
-                for (let i = 0; i < 10000; i++) {
-                divs1.push(
-                    <div  key={i}>
-                    {inputValue1}
-                    </div>
-                );
-                }
-                let divs2 = [];
-                let inputValue2 = this.state.inputValue2;
-                for (let i = 0; i < 20000; i++) {
-                divs2.push(
-                    <div  key={i}>
-                    {inputValue2}
-                    </div>
-                );
-                }
                 return (
-                <div>
-                    <input onChange={this.onChange1} value={this.state.inputValue1} />
-                    <input onChange={this.onChange2} value={this.state.inputValue2} />
-                    <div>{this.state.nums}</div>
-                    <div className="div-two">
-                        <div>{divs1}</div>
-                        <div>{divs2}</div>
+                    <div>
+                        <button onClick={(e) => this.click(e)}>click</button>
+                        {this.state.divs1.map((item) => {
+                            return <div key={item.k}>{item.v}</div>
+                        })}
                     </div>
-                </div>
-                );
+                )
             }
         }
 
 var s 
 window.onload = function(){
    s = ReactDOM.render(
-<React.unstable_ConcurrentMode>
+
     <App />
-  </React.unstable_ConcurrentMode>, document.getElementById('example'))
+  , document.getElementById('example'))
 }
 </script>
 

@@ -94,7 +94,6 @@
       //       return state
       //   }
       // }
-      debugger
       // var store = Redux.createStore(counter, Redux.applyMiddleware(thunk))
       var store = Redux.createStore(counter, Redux.applyMiddleware(thunk, myThunk))
       // var store = Redux.createStore(counter)

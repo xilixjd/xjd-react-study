@@ -5107,7 +5107,6 @@ function getListeningForDocument(mountAt) {
 function listenTo(registrationName, mountAt) {
   var isListening = getListeningForDocument(mountAt);
   var dependencies = registrationNameDependencies[registrationName];
-  dependencies = ["input"]
 
   for (var i = 0; i < dependencies.length; i++) {
     var dependency = dependencies[i];
@@ -12563,14 +12562,13 @@ function applyDerivedStateFromProps(workInProgress, ctor, getDerivedStateFromPro
     updateQueue.baseState = memoizedState;
   }
 }
-var last = null
+
 var classComponentUpdater = {
   isMounted: isMounted,
   enqueueSetState: function (inst, payload, callback) {
     var fiber = get(inst);
     var currentTime = requestCurrentTime();
     var expirationTime = computeExpirationForFiber(currentTime, fiber);
-    console.log("setState", payload, expirationTime)
 
     var update = createUpdate(expirationTime);
     update.payload = payload;
@@ -18932,7 +18930,6 @@ function scheduleCallbackWithExpirationTime(root, expirationTime) {
   var currentMs = unstable_now() - originalStartTimeMs;
   var expirationTimeMs = expirationTimeToMs(expirationTime);
   var timeout = expirationTimeMs - currentMs;
-  console.log(timeout)
   callbackID = unstable_scheduleCallback(performAsyncWork, { timeout: timeout });
 }
 
