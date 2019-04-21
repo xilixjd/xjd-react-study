@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="./preact.js"></script>
+  <script src="./babel.js"></script>
+  <script type='text/babel'>
+    class App extends React.Component {
+      constructor(props) {
+        super(props)
+        this.state = {
+          aaa: 'aaa',
+          num: 0,
+          error: false,
+        }
+      }
+      render() {
+        return (
+          [<div>1</div>, <div>2</div>]
+        )
+      }
+    }
+
+    window.onload = function(){
+      s = ReactDOM.render(
+      <App />, document.getElementById('example'))
+    }
+  </script>
+</head>
+<div id="example"></div>
+
+</html>
