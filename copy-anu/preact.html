@@ -9,20 +9,38 @@
       constructor(props) {
         super(props)
         this.state = {
-          aaa: 'aaa',
+          flag: true,
           num: 0,
           error: false,
         }
       }
+      click() {
+        this.setState({
+          flag: !this.state.flag
+        })
+      }
       render() {
         return (
-          [<div>1</div>, <div>2</div>]
+          <div>
+            <button onClick={() => this.click()}>button</button>
+            {
+              this.state.flag ?
+              <React.Fragment>
+                <h2>1</h2>
+                <h2>2</h2>
+              </React.Fragment>
+              :
+              <h3>12</h3>
+            }
+            <div>3</div>
+            <div>4</div>
+          </div>
         )
       }
     }
 
     window.onload = function(){
-      s = ReactDOM.render(
+      var s = ReactDOM.render(
       <App />, document.getElementById('example'))
     }
   </script>

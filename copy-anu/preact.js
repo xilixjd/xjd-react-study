@@ -282,7 +282,7 @@
 		let childVNode, i, j, p, index, oldVNode, newDom,
 			nextDom, sibDom, focus,
 			childDom;
-
+		
 		let newChildren = newParentVNode._children || toChildArray(newParentVNode.props.children, newParentVNode._children = [], coerceToVNode);
 		let oldChildren = oldParentVNode != null && oldParentVNode != EMPTY_OBJ && oldParentVNode._children || EMPTY_ARR;
 
@@ -547,7 +547,6 @@
 
 		try {
 			outer: if (oldVNode.type === Fragment || newType === Fragment) {
-				debugger
 				diffChildren(parentDom, newVNode, oldVNode, context, isSvg, excessDomChildren, mounts, c);
 
 				if (newVNode._children.length) {
