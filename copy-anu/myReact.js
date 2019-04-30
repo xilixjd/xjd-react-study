@@ -985,6 +985,7 @@ function updateStateless(lastTypeVnode, nextTypeVnode, context, mountQueue) {
 function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
     let lastChildren = lastVnode.vchildren
     let nextChildren = flattenVChildrenToVnode(nextVnode)
+    // 动态
     let childNodes = parentNode.childNodes
     let mountAll = mountQueue.mountAll
     // 若 nextChildren 长度为 0，则将旧节点全部删除
@@ -1041,6 +1042,7 @@ function updateChildren(lastVnode, nextVnode, parentNode, context, mountQueue) {
             queue = mountAll ? mountQueue : []
         if (old) {
             delete el.old
+            // ??? bug 永远不会进入if
             if (el === old && old._hostNode && !contextHasChange) {
                 dom = old._hostNode
             } else {
